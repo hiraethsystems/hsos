@@ -11,7 +11,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check && tsc --noEmit && node scripts/check-colours.mjs"
+    "check": "astro check && tsc --noEmit && node scripts/check-colours.mjs",
+    "test:e2e": "node tests/e2e/run.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.7",

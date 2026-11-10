@@ -4,9 +4,12 @@
  * must read properly with JavaScript turned off (CLAUDE.md rule 1).
  */
 import { cssVariables, type TitleRampName } from '../os/palette';
+import { divisionName } from '../os/divisions';
 import { pathSegments, STATIC_DIRS, url } from '../os/routes';
+import Shell from '../os/Shell';
 import { getProjects } from '../site/content';
 import '../styles/global.css';
+import '../styles/shell.css';
 
 type Section = 'home' | 'welcome' | 'divisions' | 'memos';
 
@@ -34,7 +37,13 @@ const fullTitle = title === 'HSOS' ? title : `${title} · HSOS`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const windowColours = `--win-bands: var(--bands-${ramp}); --win-dark: var(--ramp-${ramp}-0); --win-shadow: var(--c-shadow-${ramp});`;
 
-const linkable = new Set([...STATIC_DIRS, ...(await getProjects()).map((p) => url.dossier(p.data.division, p.id))]);
+const projects = await getProjects();
+const linkable = new Set([...STATIC_DIRS, ...projects.map((p) => url.dossier(p.data.division, p.id))]);
+const shellProjects = projects.map((p) => ({
+  name: p.data.name,
+  url: url.dossier(p.data.division, p.id),
+  divisionName: divisionName(p.data.division),
+}));
 const segments = pathSegments(path, linkable, Astro.url.pathname);
 
 const nav: { section: Section; href: string; label: string }[] = [
@@ -54,6 +63,21 @@ const nav: { section: Section; href: string; label: string }[] = [
     <link rel="canonical" href={canonical} />
     <link rel="preload" href="/fonts/vt323-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
     <style is:inline set:html={cssVariables()} />
+    <script is:inline>
+      // If the desktop is going to start, hide the static page now rather than flash it.
+      // The shell confirms it is running; if it has not within 4 seconds, show the page.
+      (function () {
+        var root = document.documentElement;
+        try {
+          if (window.matchMedia('(min-width: 900px)').matches && window.sessionStorage.getItem('hsos.plain') !== '1') {
+            root.classList.add('hsos-shell');
+            window.setTimeout(function () {
+              if (!root.classList.contains('hsos-shell-ready')) root.classList.remove('hsos-shell');
+            }, 4000);
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="doc">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -83,5 +107,6 @@ const nav: { section: Section; href: string; label: string }[] = [
       </div>
     </main>
     <footer class="doc-footer">HSOS 256. All feelings reserved.</footer>
+    <div id="hsos-root"><Shell client:only="preact" projects={shellProjects} /></div>
   </body>
 </html>

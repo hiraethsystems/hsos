@@ -314,3 +314,24 @@ export function cssVariables(): string {
   }
   return `:root {\n  ${lines.join('\n  ')}\n}`;
 }
+
+/** A colour by name (`'ink'`) or by ramp step (`'board.3'`). Used by sprites. */
+export type ColourRef = ColourName | `${RampName}.${number}`;
+
+/** Slot index of a colour reference. Throws on an unknown reference. */
+export function refIndex(ref: ColourRef): number {
+  const dot = ref.lastIndexOf('.');
+  if (dot > 0) {
+    const r = (RAMP as Record<string, readonly number[] | undefined>)[ref.slice(0, dot)];
+    const slot = r?.[Number(ref.slice(dot + 1))];
+    if (slot !== undefined) return slot;
+  }
+  const slot = (SLOT as Record<string, number | undefined>)[ref];
+  if (slot === undefined) throw new Error(`palette: unknown colour reference "${ref}"`);
+  return slot;
+}
+
+/** Red, green and blue (0 to 255) of a palette slot, for drawing to a canvas. */
+export function slotRgb(slot: number): [number, number, number] {
+  return toRgb(PALETTE[slot]!);
+}

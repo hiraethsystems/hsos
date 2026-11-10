@@ -467,6 +467,33 @@ scrolling and focus. This is what keeps every future app looking like part of on
 
 ---
 
+### 12.1 Decided 1.1, as built in Phase 2
+
+- The manifest uses `chrome(args)` (title bar path and ramp) instead of a fixed `path`, and
+  `defaultSize(args)` instead of `defaultRect`: the window manager chooses the position and
+  keeps it on screen. Apps with many windows give a `windowKey(args)`; opening the same key
+  again focuses the existing window. `menu`, `commands` and `vfs` arrive with the phases that
+  need them (menus are built centrally in `src/os/menu/menus.ts` until then).
+- `AppProps` currently has `args`, `open`, `memo` and `settings`. `vfs` (Phase 5) and `clock`
+  (Phases 4 and 6) are added when they exist.
+- **Page viewer** (`src/os/apps/page/`): one window per static page. It fetches the real page
+  and shows its `.doc-body`, so windows and static pages share one source. Links to HSOS pages
+  open in windows, outside links open in a new tab, and `hsos:open/<app>` words become buttons.
+- Apps not built yet (The Board, Listening Post, Ledger, Settings, Terminal) open an HR memo
+  saying they are awaiting budget approval.
+- The address bar follows the focused page window (`history.replaceState`), so any window can
+  be shared. It is left alone on first load. Closing every window returns it to `/`.
+- The desktop starts only at 900px wide and above; narrower screens keep the static pages
+  until Handheld mode (Phase 6).
+- **Plain View** (◆ HSOS menu) turns the desktop off for the rest of the tab session
+  (`sessionStorage` key `hsos.plain`) and shows a "Return to the desktop" button. This is for
+  anyone who would rather just read.
+- Home opens WELCOME.dd with Divisions beside it. A deep link opens just that page. An unknown
+  URL opens the 404 page in a window.
+- The Files menu also has **Memos** (`~/memos`), as memos are the blog.
+- Disabled menu items stay focusable (`aria-disabled`) so their reason can be read.
+- Closing a window moves keyboard focus to the window now on top.
+
 ## 13. Content model
 
 `src/content/projects/<slug>.md` frontmatter:

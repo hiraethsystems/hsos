@@ -1,0 +1,402 @@
+/*
+ * The desktop shell. Colours only from palette variables; gradients only as stepped bands.
+ * Loaded on every page; none of it applies until the shell is running.
+ */
+
+/* While the desktop runs, it replaces the static page (which stays in the HTML for no-JS
+   visitors, search engines, and as the source of window content). The head script adds
+   .hsos-shell early to avoid a flash of the static page, and removes it again if the shell
+   has not started within a few seconds. */
+html.hsos-shell body > :not(#hsos-root) {
+  display: none !important;
+}
+html.hsos-shell body {
+  overflow: hidden;
+  background: var(--c-black);
+}
+
+.hs-shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size);
+  line-height: var(--ui-line);
+  color: var(--c-ink);
+  background: var(--c-desktop);
+}
+
+.hs-sprite {
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* ---- Wallpapers (SPEC 4.7) --------------------------------------------------------------- */
+
+.hs-wall {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.hs-wall-sunset {
+  background: var(--c-desktop);
+}
+.hs-sky {
+  position: absolute;
+  inset: 0 0 35% 0;
+  background: var(--bands-sky);
+}
+.hs-sun {
+  position: absolute;
+  left: 40%;
+  top: 25%;
+  width: min(42vh, 26vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+.hs-mountains {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 15%;
+  background: var(--c-mountains);
+  clip-path: polygon(0 100%, 0 60%, 8% 30%, 16% 55%, 26% 10%, 36% 50%, 44% 35%, 52% 70%, 62% 25%, 72% 55%, 82% 15%, 92% 45%, 100% 30%, 100% 100%);
+}
+.hs-floor {
+  position: absolute;
+  inset: 65% 0 0 0;
+  background-color: var(--c-desktop);
+  background-image:
+    repeating-linear-gradient(0deg, var(--ramp-grid-0) 0 2px, transparent 2px 34px),
+    repeating-linear-gradient(90deg, var(--ramp-grid-0) 0 2px, transparent 2px 90px);
+  border-top: 3px solid var(--ramp-grid-0);
+}
+.hs-wall-corporate {
+  background-color: var(--c-corporate-a);
+  background-image:
+    radial-gradient(circle, var(--c-corporate-dot) 0 3px, transparent 3px),
+    conic-gradient(var(--c-corporate-b) 0 25%, var(--c-corporate-a) 25% 50%, var(--c-corporate-b) 50% 75%, var(--c-corporate-a) 75%);
+  background-size: 40px 40px, 80px 80px;
+  background-position: 20px 20px, 0 0;
+}
+.hs-wall-workbench {
+  background: var(--bands-workbench);
+}
+.hs-wall-paper {
+  background-color: var(--c-doldoc-paper);
+  background-image: radial-gradient(var(--c-doldoc-dot) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+
+/* ---- Menu bar (SPEC 6) --------------------------------------------------------------------- */
+
+.hs-menubar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 10;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  color: var(--c-white);
+  background: var(--bands-menubar);
+  border-bottom: 2px solid var(--c-highlight);
+}
+.hs-menutitles {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hs-menuwrap {
+  position: relative;
+}
+.hs-menutitle {
+  height: 28px;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--c-white);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.hs-menutitle:hover,
+.hs-menutitle.is-open {
+  color: var(--ramp-menubar-0);
+  background: var(--c-highlight);
+}
+.hs-menu {
+  position: absolute;
+  left: 0;
+  top: 29px;
+  min-width: 300px;
+  padding: 4px 0;
+  background: var(--c-paper);
+  border: 2px solid var(--c-ink);
+  box-shadow: 5px 5px 0 var(--c-shadow-menu);
+}
+.hs-mi {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  padding: 2px 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--c-ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.hs-mi:focus-visible {
+  outline-offset: -3px;
+  box-shadow: none;
+}
+.hs-mi:not([aria-disabled]):hover,
+.hs-mi:not([aria-disabled]):focus-visible {
+  color: var(--c-white);
+  background: var(--bands-menu-hover);
+}
+.hs-mi-hint {
+  color: var(--c-muted);
+}
+.hs-mi:not([aria-disabled]):hover .hs-mi-hint,
+.hs-mi:not([aria-disabled]):focus-visible .hs-mi-hint {
+  color: inherit;
+}
+.hs-mi[aria-disabled] {
+  color: var(--c-disabled);
+  cursor: not-allowed;
+}
+.hs-menusep {
+  height: 2px;
+  margin: 4px 8px;
+  background: repeating-linear-gradient(90deg, var(--c-ink) 0 4px, transparent 4px 8px);
+}
+.hs-menustatus {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 6px;
+}
+.hs-morale {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hs-morale-label {
+  color: var(--c-highlight);
+}
+.hs-morale-bars {
+  display: flex;
+  gap: 2px;
+}
+.hs-morale-bars span {
+  width: 6px;
+  height: 14px;
+}
+
+/* ---- Desktop icons (SPEC 7) ---------------------------------------------------------------- */
+
+.hs-icons {
+  position: absolute;
+  top: 44px;
+  right: 6px;
+  bottom: 8px;
+  z-index: 1;
+}
+.hs-icons ul {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  gap: 6px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hs-ico {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 88px;
+  padding: 4px;
+  font: inherit;
+  color: var(--c-ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.hs-ico-label {
+  padding: 0 4px;
+  white-space: nowrap;
+  background: var(--c-paper);
+  border: 1px solid var(--c-ink);
+}
+.hs-ico:hover .hs-ico-label,
+.hs-ico:focus-visible .hs-ico-label {
+  color: var(--c-white);
+  background: var(--ramp-docs-1);
+}
+
+/* ---- Windows (SPEC 4.3, 5) ----------------------------------------------------------------- */
+
+.hs-windows {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.hs-win {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-paper);
+  border: 2px solid var(--win-dark);
+  box-shadow: 5px 5px 0 var(--win-shadow);
+  pointer-events: auto;
+}
+.hs-win:focus {
+  outline: none;
+}
+.hs-win:focus-visible {
+  outline: 3px solid var(--c-highlight);
+  outline-offset: 2px;
+}
+.hs-tb {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 0 10px;
+  color: var(--c-white);
+  background: var(--win-bands);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+.hs-tb-title {
+  margin: 0;
+  overflow: hidden;
+  font: inherit;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hs-x {
+  flex: none;
+  padding: 0 4px;
+  font: inherit;
+  color: var(--c-white);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.hs-x:hover,
+.hs-x:focus-visible {
+  background: var(--c-close-hover);
+}
+.hs-win-body {
+  flex: 1;
+  min-height: 0;
+}
+.hs-grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  touch-action: none;
+  background: linear-gradient(135deg, transparent 0 50%, var(--c-ink) 50% 58%, transparent 58% 70%, var(--c-ink) 70% 78%, transparent 78%);
+}
+.hs-page-message {
+  margin: 0;
+  padding: 16px 20px;
+}
+
+/* ---- Controls ------------------------------------------------------------------------------ */
+
+.hs-link {
+  padding: 0;
+  font: inherit;
+  color: var(--c-link);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.hs-link:hover {
+  color: var(--c-link-hover);
+  background: var(--c-highlight);
+}
+.hs-btn {
+  padding: 2px 12px;
+  font: inherit;
+  color: var(--c-white);
+  background: var(--bands-button);
+  border: 2px solid var(--c-scroll-dark);
+  cursor: pointer;
+}
+.hs-btn:hover {
+  color: var(--c-scroll-dark);
+  background: var(--bands-button-hover);
+}
+.hs-plain-return {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 5;
+  font-family: var(--font-ui);
+  font-size: var(--ui-size);
+}
+
+/* ---- HR memo (SPEC 11.9) ------------------------------------------------------------------- */
+
+.hs-modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+}
+.hs-memo {
+  width: min(440px, calc(100% - 32px));
+  background: var(--c-paper);
+  border: 2px solid var(--c-black);
+  box-shadow: 6px 6px 0 var(--c-ink);
+}
+.hs-memo-title {
+  margin: 0;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--c-white);
+  background: var(--bands-hr);
+}
+.hs-memo-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.hs-memo-body p {
+  margin: 0;
+}
+.hs-memo-body .hs-btn {
+  align-self: flex-end;
+}
+
+/* ---- CRT scanlines (SPEC 4.8). The only translucent colour in HSOS. ------------------------ */
+
+.hs-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, var(--c-scanline) 0 1px, transparent 1px 3px);
+  opacity: 0.16;
+}

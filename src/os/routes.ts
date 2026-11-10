@@ -60,3 +60,37 @@ export function pathSegments(path: string, linkable: ReadonlySet<string>, curren
   });
   return out;
 }
+
+export type PageKind = 'home' | 'welcome' | 'desk' | 'memos' | 'memo' | 'divisions' | 'division' | 'dossier';
+
+export interface PageInfo {
+  kind: PageKind;
+  /** Normalised URL, with a trailing slash. */
+  url: string;
+  /** Filesystem path for the title bar. */
+  path: string;
+}
+
+/**
+ * Recognise a static page URL, so the desktop can open it in a window. Returns null for
+ * anything that is not one of ours (the desktop then lets the browser follow the link).
+ * Whether the page really exists is settled when the window fetches it.
+ */
+export function describeUrl(pathname: string): PageInfo | null {
+  const u = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  if (u === url.home) return { kind: 'home', url: u, path: '/' };
+  if (u === url.welcome) return { kind: 'welcome', url: u, path: vfsPath.welcome };
+  if (u === url.desk) return { kind: 'desk', url: u, path: '~/' };
+  if (u === url.memos) return { kind: 'memos', url: u, path: '~/memos/' };
+  if (u === url.divisions) return { kind: 'divisions', url: u, path: url.divisions };
+  const memo = /^\/home\/employee\/memos\/([a-z0-9-]+)\/$/.exec(u);
+  if (memo) return { kind: 'memo', url: u, path: `~/memos/${memo[1]}.txt` };
+  const srv = /^\/srv\/divisions\/([a-z0-9-]+)\/(?:([a-z0-9-]+)\/)?$/.exec(u);
+  const division = DIVISIONS.find((d) => d.id === srv?.[1]);
+  if (srv && division) {
+    return srv[2]
+      ? { kind: 'dossier', url: u, path: vfsPath.dossier(division.id, srv[2]) }
+      : { kind: 'division', url: u, path: url.division(division.id) };
+  }
+  return null;
+}
