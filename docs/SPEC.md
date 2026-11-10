@@ -1,6 +1,9 @@
 # HSOS Design and Build Specification
 
-Version 1.0, 10 November 2026. Owner: Aisling (Hiraeth Systems).
+Version 1.1, 10 November 2026. Owner: Aisling (Hiraeth Systems).
+
+Changes in 1.1: decisions taken before Phase 0 (title bar contrast, prose font, transparency,
+boot on deep links, palette details, content slugs). See the sections marked "Decided 1.1".
 Domain: hiraeth.systems. Repository: `hsos` on the `hiraethsystems` GitHub account.
 
 This document records every decision made during the design phase. It is the source of truth.
@@ -148,6 +151,19 @@ Use Linux paths as URLs where sensible, they reinforce the joke and stay readabl
 - UI ink colours: text `#1a1a6b`, links `#b0105a`, link hover background `#ffe066`, muted
   `#6a6a8a`, success `#14874a`, terminal green `#7dff9a`.
 - **Rule:** gradients are always stepped bands built from palette entries. No smooth gradients.
+- **Decided 1.1:**
+  - Every colour the site uses, including one-off colours from the prototype (icons, ledger
+    bars, wallpapers, scrollbars, window shadows), is a named slot in the palette. Smooth
+    gradients in the prototype are converted to stepped bands.
+  - Ramps own their own slots, even when a colour repeats in another ramp (real VGA palettes
+    had duplicates too).
+  - Slots not used by anything are filled with black and marked unspent. The `palette`
+    terminal command prints the real number of unspent slots for Finance to worry about.
+  - No transparency, with one exception: the CRT scanline overlay may use a palette colour
+    at reduced opacity. Shadows are solid palette colours.
+  - The palette reaches CSS as custom properties (`--c-ink`, `--ramp-files-0` and so on),
+    generated from `palette.ts` at build time. Stylesheets use only those variables.
+    `npm run check` fails if a hex colour appears anywhere in `src/` outside `palette.ts`.
 
 ### 4.2 Typography
 
@@ -155,6 +171,10 @@ Use Linux paths as URLs where sensible, they reinforce the joke and stay readabl
   evaluate fonts from the Ultimate Oldschool PC Font Pack (https://int10h.org/oldschool-pc-fonts/),
   which ships `.woff` web versions under CC BY-SA 4.0 (credit VileR in `docs/CREDITS.md`).
   Pick one for UI text and keep VT323 or a PC font for the terminal. Owner signs off the choice.
+- **Decided 1.1:** the pixel font is for chrome, headings, labels and the terminal only. Long
+  prose (dossier and memo bodies) uses a plain readable font. Until the owner picks one, prose
+  uses the system sans serif stack. VT323 is self-hosted as the placeholder pixel font; no
+  font is ever loaded from Google or another third party.
 - Body text in dossiers and memos must stay comfortable to read at length (the owner finds
   dense reading hard): generous line height, short paragraphs, never tiny pixel fonts for prose.
 
@@ -171,6 +191,12 @@ Use Linux paths as URLs where sensible, they reinforce the joke and stay readabl
   - Listening Post: `#0a5a6b #0f7387 #178ca3 #21a6bf`
   - Ledger: `#8a3a00 #a85000 #c66a10 #e08a28`
   - Dossier/HR: `#8a1a3a #a82a4a #c63a5a #e04a6a`
+  - **Decided 1.1:** white title text must reach 4.5:1 on every band, so four ramps are
+    darkened from the prototype values above. The build uses:
+    - Divisions/Files: `#0d6b3a #127440 #167d46 #1b864c`
+    - Listening Post: `#0a5a6b #0f6778 #147386 #198093`
+    - Ledger: `#8a3a00 #93490a #9d5714 #a6661e`
+    - Dossier/HR: `#8a1a3a #a02847 #b63553 #cc4360`
   - Settings/System: `#3a3a4e #4a4a62 #5a5a76 #6a6a8a`
   - Terminal: `#2a2a3a #3a3a4e #4a4a62 #5a5a76` on a `#05050f` body
 - Menu bar: stepped purple ramp `#1a0a4a #2a0f63 #3d167d #531e96 #6b28b0`, yellow
@@ -308,6 +334,8 @@ Rules:
 - **First visit** in a browser: full boot. **Later visits**: a short boot (about one second,
   just the BIOS header and "Last login") unless the visitor runs `reboot`.
 - `prefers-reduced-motion`: show the final screen instantly, then the desktop.
+- **Decided 1.1:** the full first-visit boot only plays on `/`. A first visit that lands on any
+  other URL (a deep link to a dossier or memo) gets the short boot, so content is not delayed.
 - `reboot` in the terminal and Reboot in the menu replay the full boot.
 
 ---
@@ -366,7 +394,7 @@ v1 commands:
 | `open X` | Open an app or a project by name/slug |
 | `board` / F7 | Print a Board directive and update the Board window |
 | `wall X` | Set wallpaper: sunset, corporate, workbench, paper |
-| `palette` | Print colour bars and Finance's concern |
+| `palette` | Print colour bars, the real count of unspent slots, and Finance's concern |
 | `uname -a` | `HSOS hsos 2.0.36-corp #1 SMP PREEMPT_BOARD i486 Hiraeth/Systems` |
 | `whoami` | `employee (uid=1000 gid=1000(assets) groups=1000(assets),27(sudo-pending))` |
 | `sudo`, `su` | Not in the sudoers file, incident reported to the Board |
@@ -456,6 +484,8 @@ links:
 order: 10
 ```
 
+`slug` must match the file name (the build fails otherwise).
+
 The Markdown body is the full description. Satire may live in the dossier chrome; the
 description itself stays factual so people can actually learn about the project.
 
@@ -526,7 +556,7 @@ speaker before going live.
 Each phase ends with a working build, a commit, and a plain English summary to the owner.
 
 0. **Scaffold**: Astro + TypeScript + Preact, content collections, palette.ts, fonts,
-   CREDITS.md, lint/check scripts. Static page layout in HSOS document style.
+   CREDITS.md, check scripts (`astro check`, TypeScript, colour check; no ESLint for now). Static page layout in HSOS document style.
 1. **Static layer**: home, divisions list, dossier pages, memo pages, all working with JS off.
 2. **Shell core**: desktop, wallpapers, window manager (drag, resize, focus, scroll),
    menu bar with dropdowns, desktop icons, HR memo dialog.
@@ -556,7 +586,7 @@ From the design session, in rough priority order:
 
 ## 20. Open decisions (owner to confirm)
 
-- Final UI and terminal fonts.
+- Final UI and terminal fonts, and the font for long prose (system sans serif until then).
 - Exact URL scheme (section 3.3 proposal).
 - Whether the boot plays in full on every visit or only the first (spec default: first only).
 - Real project descriptions and screenshots (`docs/CONTENT.md`).
