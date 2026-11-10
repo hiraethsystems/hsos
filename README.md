@@ -94,6 +94,12 @@ upgrade before then.
 
 ---
 
+## Tests
+
+- `npm run check`: types, Astro and the colour rule.
+- `npm run build && npm run test:e2e`: browser tests in headless Firefox (`tests/e2e/`). They
+  drive the real site: windows, menus, keyboard, boot, reduced motion, blocked storage.
+
 ## Pinned dependencies
 
 - `@astrojs/preact` is pinned to exactly **6.1.2**. Version 6.1.3 (published 10 November 2026)

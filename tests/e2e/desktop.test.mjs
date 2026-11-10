@@ -7,7 +7,7 @@ const wins = () => b.eval(`JSON.stringify([...document.querySelectorAll('.hs-win
 const top = (ws) => ws.reduce((a, w) => (w.z > a.z ? w : a));
 const find = (ws, t) => ws.find((w) => w.t.includes(t));
 try {
-  await b.goto(base + '/'); await b.wait(600);
+  await b.goto(base + '/'); await b.wait(600); await b.skipBoot();
   let w = await wins();
   check('home opens Welcome and Divisions', w.length === 2 && !!find(w, 'WELCOME') && !!find(w, 'divisions'), w.map((x) => x.t).join(', '));
   check('Welcome is on top at start', top(w).t.includes('WELCOME'));
@@ -96,16 +96,16 @@ try {
   check('closing hands focus to the window on top', await b.eval(`document.activeElement?.classList.contains('hs-win')`));
 
   // 404 inside the desktop
-  await b.goto(base + '/no/such/page/'); await b.wait(600);
+  await b.goto(base + '/no/such/page/'); await b.wait(600); await b.skipBoot();
   check('unknown URL shows the 404 page in a window', (await b.eval(`[...document.querySelectorAll('.hs-win')].some(w => w.textContent.includes('No such file or directory'))`)));
 
   // Plain view
-  await b.goto(base + '/'); await b.wait(400);
+  await b.goto(base + '/'); await b.wait(400); await b.skipBoot();
   await b.eval(`[...document.querySelectorAll('.hs-menutitle')].find(e => e.textContent.trim() === '◆ HSOS').click()`); await b.wait(100);
   await b.eval(`[...document.querySelectorAll('.hs-mi')].find(e => e.textContent.startsWith('Plain View')).click()`); await b.wait(1500);
   check('Plain View shows the static page', await b.eval(`!document.querySelector('.hs-shell') && getComputedStyle(document.querySelector('main.doc-window')).display !== 'none'`));
   check('Plain View offers a way back', await b.eval(`!!document.querySelector('.hs-plain-return')`));
-  await b.eval(`document.querySelector('.hs-plain-return').click()`); await b.wait(1500);
+  await b.eval(`document.querySelector('.hs-plain-return').click()`); await b.wait(1500); await b.skipBoot();
   check('Return to the desktop works', await b.eval(`!!document.querySelector('.hs-shell')`));
 
   // Narrow screens keep the static page

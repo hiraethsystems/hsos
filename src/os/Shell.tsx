@@ -6,13 +6,14 @@
 import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 import { APPS, PENDING_APPS, resolveAppName } from './apps/registry';
 import { primePage } from './apps/page/PageView';
+import { BootScreen, type BootMode } from './boot/BootScreen';
 import { DesktopIcons, type DesktopIcon } from './desktop/DesktopIcons';
 import { Wallpaper } from './desktop/Wallpaper';
 import { MemoDialog } from './memo/MemoDialog';
 import { MenuBar } from './menu/MenuBar';
 import { buildMenus } from './menu/menus';
 import { describeUrl, url as urls } from './routes';
-import { loadSettings, plainViewChosen, setPlainView } from './settings';
+import { loadSettings, plainViewChosen, prefersReducedMotion, saveSettings, setPlainView, type Settings } from './settings';
 import type { AppArgs, Rect } from './types';
 import { clampRect, ICONS_W, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
 import { Window } from './wm/Window';
@@ -76,6 +77,23 @@ function wmReducer(s: WmState, a: WmAction): WmState {
 }
 
 const viewport = (): Bounds => ({ w: window.innerWidth, h: window.innerHeight });
+
+/** Give keyboard focus to the window on top, if any. */
+function focusTopWindow(): void {
+  window.requestAnimationFrame(() => {
+    const wins = [...document.querySelectorAll<HTMLElement>('.hs-win')];
+    wins.sort((x, y) => Number(y.style.zIndex) - Number(x.style.zIndex))[0]?.focus({ preventScroll: true });
+  });
+}
+
+/**
+ * Which boot to play (SPEC 8, decided 1.1). Full on a first visit to `/`, or every visit if the
+ * visitor asked for it. Otherwise short: later visits, and first visits that land on a deep link.
+ */
+function chooseBoot(s: Settings): BootMode {
+  if (s.fullBootEveryVisit) return 'full';
+  return !s.seenBoot && window.location.pathname === '/' ? 'full' : 'short';
+}
 const windowKey = (appId: string, args: AppArgs) => `${appId}:${APPS[appId]?.windowKey?.(args) ?? ''}`;
 
 /** The windows open when the desktop first appears. */
@@ -141,8 +159,23 @@ export default function Shell({ projects }: Props) {
 
 function Desktop({ projects }: Props) {
   const [bounds, setBounds] = useState<Bounds>(viewport);
-  const [settings] = useState(loadSettings);
+  const [settings, setSettings] = useState(loadSettings);
   const [memo, setMemo] = useState<string | null>(null);
+  const [reducedMotion] = useState(prefersReducedMotion);
+  const [boot, setBoot] = useState<BootMode | null>(() => chooseBoot(settings));
+
+  const bootDone = (mode: BootMode) => {
+    if (mode === 'full') {
+      setSettings((s) => {
+        if (s.seenBoot) return s;
+        const next = { ...s, seenBoot: true };
+        saveSettings(next);
+        return next;
+      });
+    }
+    setBoot(null);
+    focusTopWindow();
+  };
   const [wm, dispatch] = useReducer(wmReducer, undefined, () => {
     // The page the visitor landed on is already in the document: no need to fetch it again.
     const body = document.querySelector('.doc-body');
@@ -163,10 +196,7 @@ function Desktop({ projects }: Props) {
   /** Close a window and hand keyboard focus to the one now on top, so focus is never lost. */
   const close = (key: string) => {
     dispatch({ type: 'close', key });
-    window.requestAnimationFrame(() => {
-      const rest = [...document.querySelectorAll<HTMLElement>('.hs-win')];
-      rest.sort((x, y) => Number(y.style.zIndex) - Number(x.style.zIndex))[0]?.focus({ preventScroll: true });
-    });
+    focusTopWindow();
   };
 
   const open = (name: string, args?: AppArgs) => {
@@ -199,7 +229,7 @@ function Desktop({ projects }: Props) {
         open: (n) => open(n),
         openUrl: (u) => open('page', { url: u }),
         memo: setMemo,
-        reboot: () => window.location.reload(),
+        reboot: () => setBoot('full'),
         plainView: () => {
           setPlainView(true);
           window.location.reload();
@@ -225,7 +255,8 @@ function Desktop({ projects }: Props) {
   ];
 
   return (
-    <div class="hs-shell">
+    <>
+    <div class="hs-shell" inert={boot !== null}>
       <Wallpaper id={settings.wallpaper} />
       <MenuBar menus={menus} />
       <div class="hs-windows">
@@ -255,5 +286,7 @@ function Desktop({ projects }: Props) {
       {settings.scanlines && <div class="hs-scanlines" aria-hidden="true" />}
       {memo !== null && <MemoDialog text={memo} onClose={() => setMemo(null)} />}
     </div>
+    {boot && <BootScreen key={boot} mode={boot} reducedMotion={reducedMotion} onDone={() => bootDone(boot)} />}
+    </>
   );
 }

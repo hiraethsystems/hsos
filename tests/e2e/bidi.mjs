@@ -7,9 +7,11 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-export async function launch({ width = 1280, height = 800, port = 9333 } = {}) {
+/** prefs: extra Firefox preferences, for example { 'ui.prefersReducedMotion': 1 }. */
+export async function launch({ width = 1280, height = 800, port = 9333, prefs = {} } = {}) {
   const profile = mkdtempSync(join(tmpdir(), 'hsos-ff-'));
-  writeFileSync(join(profile, 'user.js'), 'user_pref("remote.active-protocols", 1);\n');
+  const lines = { 'remote.active-protocols': 1, ...prefs };
+  writeFileSync(join(profile, 'user.js'), Object.entries(lines).map(([k, v]) => `user_pref(${JSON.stringify(k)}, ${JSON.stringify(v)});`).join('\n') + '\n');
   const ff = spawn('firefox', ['--headless', '--no-remote', '--profile', profile, `--remote-debugging-port=${port}`, `--window-size=${width},${height}`], { stdio: ['ignore', 'ignore', 'pipe'] });
   let ws;
   for (let i = 0; i < 60 && !ws; i++) {
@@ -44,6 +46,13 @@ export async function launch({ width = 1280, height = 800, port = 9333 } = {}) {
     keys: (keys) => send('input.performActions', { context, actions: [{ type: 'key', id: 'kbd', actions: keys.flatMap((k) => [{ type: 'keyDown', value: k }, { type: 'keyUp', value: k }]) }] }),
     click: (x, y) => api.pointer([{ type: 'pointerMove', x: Math.round(x), y: Math.round(y) }, { type: 'pointerDown', button: 0 }, { type: 'pointerUp', button: 0 }]),
     drag: (x1, y1, x2, y2) => api.pointer([{ type: 'pointerMove', x: Math.round(x1), y: Math.round(y1) }, { type: 'pointerDown', button: 0 }, { type: 'pointerMove', x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2), duration: 100 }, { type: 'pointerMove', x: Math.round(x2), y: Math.round(y2), duration: 100 }, { type: 'pointerUp', button: 0 }]),
+    /** Skip the boot screen if it is showing. */
+    skipBoot: async () => {
+      if (await api.eval(`!!document.querySelector('.hs-boot')`)) {
+        await api.eval(`document.querySelector('.hs-boot').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))`);
+        await api.wait(150);
+      }
+    },
     shot: async (file) => { const r = await send('browsingContext.captureScreenshot', { context }); writeFileSync(file, Buffer.from(r.data, 'base64')); },
     viewport: async (w, h) => send('browsingContext.setViewport', { context, viewport: { width: w, height: h } }),
     close: async () => { try { await send('session.end'); } catch {} ff.kill(); setTimeout(() => rmSync(profile, { recursive: true, force: true }), 500); },

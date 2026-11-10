@@ -336,6 +336,13 @@ Rules:
 - `prefers-reduced-motion`: show the final screen instantly, then the desktop.
 - **Decided 1.1:** the full first-visit boot only plays on `/`. A first visit that lands on any
   other URL (a deep link to a dossier or memo) gets the short boot, so content is not delayed.
+- **As built (Phase 3):** 160ms per line, then a 0.8 second hold on the finished screen (about
+  4.5 seconds in all). The short boot lasts 1 second. Under reduced motion the finished screen
+  is shown still for 0.5 seconds. "Seen the full boot" is stored as `seenBoot` in
+  `hsos.settings.v1`; only a full boot sets it, so a visitor who first arrives on a deep link
+  still gets the full boot on their first visit to `/`. While booting, the desktop is `inert`
+  and the "Click to skip" button has focus; screen readers hear "HSOS is starting. Press any
+  key or click to skip." rather than every log line.
 - `reboot` in the terminal and Reboot in the menu replay the full boot.
 
 ---
