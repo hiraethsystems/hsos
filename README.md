@@ -79,10 +79,13 @@ Do these when the site is ready. Nothing here touches the Ghost site.
    ```
    Then fill in the certificate paths in the 443 block, uncomment it, test and reload nginx.
    (If acme.sh isn't there, ask Claude Code to set up certbot instead.)
-5. **Deploy** from Saoirse:
+5. **Deploy** from Saoirse. In Claude Code, type `/deploy`: it shows what will change, asks
+   you to confirm, uploads and checks. Or by hand:
    ```bash
-   HSOS_DEPLOY_HOST=ubuntu@<vps address> ./scripts/deploy.sh
+   ./scripts/deploy.sh --dry-run   # see what would change
+   ./scripts/deploy.sh             # deploy
    ```
+   Both read the SSH host from `.env` (`HSOS_DEPLOY_HOST=hsos-vps`, an entry in `~/.ssh/config`).
 
 Reminder: the VPS runs Ubuntu 22.04, whose standard support ends in May 2027. Plan an
 upgrade before then.

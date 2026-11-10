@@ -543,6 +543,17 @@ speaker before going live.
 - Build on Saoirse: `npm run build` produces `dist/`.
 - Deploy with `scripts/deploy.sh`, which rsyncs `dist/` to `/var/www/hiraeth.systems/` on the
   VPS over SSH. Host and user come from environment variables, never committed.
+- **Decided 1.1, deploying through Claude Code:**
+  - On Saoirse, `~/.ssh/config` has a `hsos-vps` entry (user `ubuntu`, key `~/.ssh/id_ed25519`,
+    installed on the VPS with `ssh-copy-id`). The untracked `.env` sets `HSOS_DEPLOY_HOST=hsos-vps`.
+  - The owner types `/deploy`. The skill (`.claude/skills/deploy/SKILL.md`) runs a dry run,
+    summarises what will change, waits for the owner's yes, deploys, and verifies.
+  - `scripts/deploy.sh` refuses uncommitted changes, runs `npm run check` and the build, writes
+    `/version.txt` (commit and build time), only ever writes to `/var/www/hiraeth.systems`,
+    never creates folders or uses sudo, and confirms the server reports the new commit.
+  - `--dry-run` lists the changes without uploading.
+- The VPS also serves **`websdr.hiraeth.systems`** (its own nginx file). Like Ghost, it must not
+  be disturbed.
 - VPS: Ubuntu 22.04 with nginx, already serving the Ghost site hiraeth.club. HSOS gets its own
   server block (`deploy/nginx/hiraeth.systems.conf`) and its own TLS certificate. Never edit
   the Ghost nginx files.
