@@ -10,5 +10,3 @@ placeholder: true
 ---
 
 [Placeholder. The real description will come from `docs/CONTENT.md`.]
-
-A homebrew client for KiwiSDR and OpenWebRX receivers, with a waterfall display.

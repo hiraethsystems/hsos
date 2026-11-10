@@ -1,0 +1,15 @@
+---
+/** Served by nginx for any missing path (deploy/nginx/hiraeth.systems.conf). */
+import Document from '../layouts/Document.astro';
+import { url } from '../os/routes';
+---
+
+<Document title="No such file or directory" path="/lost+found/" ramp="system" description="This page could not be found.">
+  <h2 class="page-heading">No such file or directory</h2>
+  <p class="lede">The page you asked for is not on file. It may have been restructured.</p>
+  <ul class="link-list">
+    <li><a href={url.home}>Return to the lobby</a></li>
+    <li><a href={url.divisions}>Browse the divisions</a></li>
+    <li><a href={url.memos}>Read the memos</a></li>
+  </ul>
+</Document>

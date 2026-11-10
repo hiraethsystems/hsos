@@ -10,5 +10,3 @@ placeholder: true
 ---
 
 [Placeholder. The real description will come from `docs/CONTENT.md`.]
-
-A globe you spin to find internet radio stations.

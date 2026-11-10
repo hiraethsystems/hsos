@@ -1,0 +1,14 @@
+---
+/** /home/employee, the visitor's desk. A static listing in the style of `ls -l`. */
+import Document from '../../../layouts/Document.astro';
+import { url, vfsPath } from '../../../os/routes';
+---
+
+<Document title="Your desk" path={url.desk} description="The desk of employee, uid 1000.">
+  <p class="lede">Your desk. Personal effects will be audited.</p>
+  <ul class="listing">
+    <li><span class="perms-col">-r--r--r--</span> <a href={url.welcome}>WELCOME.dd</a> <span class="listing-note">the Employee Handbook ({vfsPath.welcome})</span></li>
+    <li><span class="perms-col">drwxr-xr-x</span> <a href={url.memos}>memos/</a> <span class="listing-note">internal memoranda</span></li>
+    <li><span class="perms-col">----------</span> <span>.bash_history</span> <span class="listing-note">seized</span></li>
+  </ul>
+</Document>

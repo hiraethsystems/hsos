@@ -1,40 +1,41 @@
 ---
-/**
- * Placeholder home page for Phase 0. Phase 1 replaces this with the real home page, and
- * Phase 2 boots the desktop on top of it.
- */
-import { getCollection } from 'astro:content';
+/** The home page. With JavaScript, the desktop will boot on top of this (Phase 2). */
+import { render } from 'astro:content';
 import Document from '../layouts/Document.astro';
-import PaletteSwatch from '../os/PaletteSwatch';
-import { divisionName } from '../os/divisions';
-import { PALETTE_SIZE, UNSPENT_SLOTS } from '../os/palette';
+import MemoList from '../components/MemoList.astro';
+import { DIVISIONS } from '../os/divisions';
+import { url } from '../os/routes';
+import { getMemos, getPage, getProjects } from '../site/content';
 
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const page = await getPage('home');
+const { Content } = await render(page);
+const projects = await getProjects();
+const memos = (await getMemos()).slice(0, 3);
+const count = (id: string) => projects.filter((p) => p.data.division === id).length;
 ---
 
-<Document title="HSOS" path="/">
+<Document title="HSOS" path="/" section="home" description={page.data.summary}>
   <div class="prose">
-    <h2>HSOS 256 is being installed</h2>
-    <p>
-      This is the home of Hiraeth Systems, and of the projects filed under its Divisions. The
-      desktop is still being assembled. Please remain at your workstation.
-    </p>
+    <Content />
+  </div>
 
-    <h2>Assets on file</h2>
-    <ul>
+  <section class="doc-section" aria-labelledby="home-divisions">
+    <h2 id="home-divisions">Divisions</h2>
+    <ul class="division-index">
       {
-        projects.map((p) => (
+        DIVISIONS.map((d) => (
           <li>
-            <strong>{p.data.name}</strong> ({divisionName(p.data.division)}): {p.data.summary}
+            <a href={url.division(d.id)}>{d.name}</a>
+            <span>{count(d.id) === 1 ? '1 asset' : `${count(d.id)} assets`}</span>
           </li>
         ))
       }
     </ul>
+    <p><a href={url.divisions}>Every asset, filed by division</a></p>
+  </section>
 
-    <h2>Colour budget</h2>
-    <p>
-      {`Finance approved ${PALETTE_SIZE} colours. ${PALETTE_SIZE - UNSPENT_SLOTS} have been allocated and ${UNSPENT_SLOTS} remain unspent. Finance is concerned.`}
-    </p>
-  </div>
-  <PaletteSwatch />
+  <section class="doc-section" aria-labelledby="home-memos">
+    <h2 id="home-memos">Latest memos</h2>
+    <MemoList memos={memos} />
+  </section>
 </Document>

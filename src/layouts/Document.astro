@@ -4,7 +4,11 @@
  * must read properly with JavaScript turned off (CLAUDE.md rule 1).
  */
 import { cssVariables, type TitleRampName } from '../os/palette';
+import { pathSegments, STATIC_DIRS, url } from '../os/routes';
+import { getProjects } from '../site/content';
 import '../styles/global.css';
+
+type Section = 'home' | 'welcome' | 'divisions' | 'memos';
 
 interface Props {
   /** Page title for the browser tab and search results. */
@@ -14,12 +18,30 @@ interface Props {
   /** Title bar colour ramp, as for apps. */
   ramp?: TitleRampName;
   description?: string;
+  /** Which top bar link to mark as current. */
+  section?: Section;
 }
 
-const { title, path, ramp = 'docs', description = 'HSOS, the operating system of Hiraeth Systems. All feelings reserved.' } = Astro.props;
+const {
+  title,
+  path,
+  ramp = 'docs',
+  description = 'HSOS, the operating system of Hiraeth Systems. All feelings reserved.',
+  section,
+} = Astro.props;
+
 const fullTitle = title === 'HSOS' ? title : `${title} · HSOS`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const windowColours = `--win-bands: var(--bands-${ramp}); --win-dark: var(--ramp-${ramp}-0); --win-shadow: var(--c-shadow-${ramp});`;
+
+const linkable = new Set([...STATIC_DIRS, ...(await getProjects()).map((p) => url.dossier(p.data.division, p.id))]);
+const segments = pathSegments(path, linkable, Astro.url.pathname);
+
+const nav: { section: Section; href: string; label: string }[] = [
+  { section: 'welcome', href: url.welcome, label: 'Handbook' },
+  { section: 'divisions', href: url.divisions, label: 'Divisions' },
+  { section: 'memos', href: url.memos, label: 'Memos' },
+];
 ---
 
 <!doctype html>
@@ -36,10 +58,26 @@ const windowColours = `--win-bands: var(--bands-${ramp}); --win-dark: var(--ramp
   <body class="doc">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="doc-bar">
-      <a href="/">◆ HIRAETH SYSTEMS</a>
+      <a class="doc-brand" href={url.home} aria-current={section === 'home' ? 'page' : undefined}>◆ HIRAETH SYSTEMS</a>
+      <nav aria-label="Main">
+        <ul>
+          {
+            nav.map((n) => (
+              <li>
+                <a href={n.href} aria-current={section === n.section ? 'page' : undefined}>
+                  {n.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
     </header>
     <main id="main" class="doc-window" style={windowColours}>
-      <h1 class="doc-title">{path}</h1>
+      <h1 class="doc-title">
+        <span class="visually-hidden">{title}, at </span>
+        {segments.map((s) => (s.href ? <a href={s.href}>{s.label}</a> : <span>{s.label}</span>))}
+      </h1>
       <div class="doc-body">
         <slot />
       </div>

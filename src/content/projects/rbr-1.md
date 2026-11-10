@@ -10,5 +10,3 @@ placeholder: true
 ---
 
 [Placeholder. The real description will come from `docs/CONTENT.md`.]
-
-A 90cm cyberpunk rubber band marksman rifle.

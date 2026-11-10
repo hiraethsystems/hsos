@@ -227,3 +227,295 @@ a:hover {
   color: var(--c-term-prompt);
   background: var(--c-black);
 }
+
+/* ---- Top bar navigation ------------------------------------------------------------------ */
+
+.doc-bar {
+  flex-wrap: wrap;
+  column-gap: 24px;
+}
+.doc-bar nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.doc-bar a {
+  padding: 0 4px;
+}
+.doc-bar a[aria-current='page'] {
+  color: var(--ramp-menubar-0);
+  background: var(--c-highlight);
+}
+
+/* ---- Title bar path: linked directories ------------------------------------------------ */
+
+.doc-title a {
+  color: var(--c-white);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.doc-title a:hover {
+  color: var(--c-ink);
+  background: var(--c-highlight);
+}
+
+/* ---- Shared pieces ----------------------------------------------------------------------- */
+
+.doc-section {
+  margin-top: 24px;
+}
+.doc-section > h2,
+.page-heading {
+  margin: 0 0 8px;
+  font-size: 1.4em;
+  font-weight: 400;
+  color: var(--c-link);
+  border-top: 2px dashed var(--win-dark);
+  padding-top: 10px;
+}
+.page-heading {
+  border-top: 0;
+  padding-top: 0;
+}
+.lede {
+  margin: 0 0 12px;
+  font-family: var(--font-prose);
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+.empty-note,
+.perms,
+.listing-note,
+.memo-from {
+  color: var(--c-muted);
+}
+.perms {
+  margin: 24px 0 0;
+}
+.link-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+.notice {
+  margin: 0 0 16px;
+  padding: 4px 10px;
+  color: var(--c-ink);
+  background: var(--c-highlight);
+  border: 2px solid var(--c-ink);
+}
+.classification {
+  margin: 0 0 12px;
+  color: var(--c-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+/* Words that name an app with no static page. The desktop turns these into live objects. */
+.hs-app-ref {
+  color: var(--c-accent);
+}
+
+/* ---- Project rows ------------------------------------------------------------------------ */
+
+.asset-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.asset-list li {
+  margin-bottom: 10px;
+}
+.asset-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 16px;
+  padding: 2px 6px;
+  color: var(--c-ink);
+  text-decoration: none;
+}
+.asset-row:hover {
+  color: var(--c-white);
+  background: var(--bands-menu-hover);
+}
+.asset-name {
+  text-decoration: underline;
+}
+.asset-meta {
+  color: inherit;
+  opacity: 1;
+}
+.asset-summary {
+  margin: 2px 0 0 6px;
+  font-family: var(--font-prose);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.division-index {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+.division-index li {
+  display: flex;
+  justify-content: space-between;
+  max-width: 420px;
+  border-bottom: 2px dotted var(--c-paper-edge);
+}
+.division-index span {
+  color: var(--c-muted);
+}
+
+/* ---- Memos ------------------------------------------------------------------------------- */
+
+.memo-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.memo-list li {
+  margin-bottom: 14px;
+}
+.memo-list time {
+  display: block;
+  color: var(--c-muted);
+}
+.memo-list p {
+  margin: 2px 0 0;
+  font-family: var(--font-prose);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.memo-list .memo-from {
+  margin-left: 12px;
+}
+.memo-kind {
+  margin: 0;
+  color: var(--c-muted);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+.memo-title {
+  margin: 0 0 12px;
+  font-size: 1.6em;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--c-link);
+}
+.memo-head {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed var(--win-dark);
+}
+
+/* ---- Field lists (dossier facts, memo headers) ------------------------------------------- */
+
+.fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0 12px;
+  margin: 0;
+}
+.fields dt {
+  color: var(--c-muted);
+}
+.fields dt::after {
+  content: ' .';
+}
+.fields dd {
+  margin: 0;
+}
+.status {
+  color: var(--c-success);
+}
+.status-archived {
+  color: var(--c-muted);
+}
+
+/* ---- Dossier ----------------------------------------------------------------------------- */
+
+.dossier {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 20px;
+  margin-bottom: 16px;
+}
+.dossier-shot {
+  flex: none;
+  width: min(100%, 280px);
+  aspect-ratio: 4 / 3;
+  margin: 0;
+  border: 2px solid var(--c-ink);
+  background: var(--c-black);
+}
+.dossier-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.dossier-shot-empty {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  padding-bottom: 6px;
+  color: var(--c-white);
+  background: var(--bands-hr);
+}
+.dossier-facts {
+  flex: 1 1 260px;
+}
+.dossier-name {
+  margin: 0 0 6px;
+  font-size: 1.6em;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--c-link);
+}
+.dossier-summary {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 2px dashed var(--ramp-hr-2);
+  font-family: var(--font-prose);
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+/* ---- WELCOME.dd masthead ----------------------------------------------------------------- */
+
+.masthead {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--c-black);
+}
+.masthead-title {
+  margin: 0;
+  font-size: 40px;
+  line-height: 40px;
+  white-space: pre-wrap;
+}
+.masthead-tagline {
+  margin: 4px 0 0;
+  color: var(--c-term-prompt);
+}
+
+/* ---- Directory listing ------------------------------------------------------------------- */
+
+.listing {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.listing li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+}
+.perms-col {
+  color: var(--c-muted);
+}

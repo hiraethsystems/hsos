@@ -10,5 +10,3 @@ placeholder: true
 ---
 
 [Placeholder. The real description will come from `docs/CONTENT.md`.]
-
-A port of Moon Child to the PS Vita.

@@ -1,0 +1,13 @@
+---
+import Document from '../../../../layouts/Document.astro';
+import MemoList from '../../../../components/MemoList.astro';
+import { url } from '../../../../os/routes';
+import { getMemos } from '../../../../site/content';
+
+const memos = await getMemos();
+---
+
+<Document title="Memos" path={url.memos} section="memos" description="Internal memoranda from Hiraeth Systems.">
+  <p class="lede">Internal memoranda, newest first. Reading them is not optional, but it is appreciated.</p>
+  <MemoList memos={memos} />
+</Document>

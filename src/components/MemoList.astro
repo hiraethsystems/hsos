@@ -1,0 +1,27 @@
+---
+/** A list of memos, newest first. */
+import { url } from '../os/routes';
+import { formatDate, isoDate, type Memo } from '../site/content';
+
+interface Props {
+  memos: Memo[];
+}
+const { memos } = Astro.props;
+---
+
+{
+  memos.length === 0 ? (
+    <p class="empty-note">No memos have been circulated. This is not a cause for concern.</p>
+  ) : (
+    <ul class="memo-list">
+      {memos.map((m) => (
+        <li>
+          <time datetime={isoDate(m.data.date)}>{formatDate(m.data.date)}</time>
+          <a href={url.memo(m.id)}>{m.data.title}</a>
+          <span class="memo-from">From {m.data.from}</span>
+          <p>{m.data.summary}</p>
+        </li>
+      ))}
+    </ul>
+  )
+}

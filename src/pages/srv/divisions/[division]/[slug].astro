@@ -1,0 +1,87 @@
+---
+/** A project dossier (SPEC 11.3, 13). The description is factual; the satire stays in the chrome. */
+import { existsSync } from 'node:fs';
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import Document from '../../../../layouts/Document.astro';
+import { divisionName, STATUS_LABELS } from '../../../../os/divisions';
+import { url, vfsPath } from '../../../../os/routes';
+import { getProjects, type Project } from '../../../../site/content';
+
+export const getStaticPaths = (async () =>
+  (await getProjects()).map((project) => ({
+    params: { division: project.data.division, slug: project.id },
+    props: { project },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const d = project.data;
+const { Content } = await render(project);
+
+if (d.screenshot && !existsSync(new URL(`../../../../../public${d.screenshot}`, import.meta.url))) {
+  throw new Error(`Dossier ${project.id}: screenshot ${d.screenshot} is not in public/.`);
+}
+
+const LINK_LABELS = { repo: 'Source code', release: 'Latest release', download: 'Download', website: 'Website' } as const;
+const links = (Object.keys(LINK_LABELS) as (keyof typeof LINK_LABELS)[])
+  .filter((k) => d.links[k])
+  .map((k) => ({ label: LINK_LABELS[k], href: d.links[k]! }));
+---
+
+<Document title={d.name} path={vfsPath.dossier(d.division, project.id)} ramp="hr" section="divisions" description={d.summary}>
+  <p class="classification">Internal asset dossier. Do not remove from the building.</p>
+
+  {
+    d.placeholder && (
+      <p class="notice">This dossier is a placeholder. The full description is awaiting approval.</p>
+    )
+  }
+
+  <div class="dossier">
+    <figure class="dossier-shot">
+      {
+        d.screenshot ? (
+          <img src={d.screenshot} alt={`Screenshot of ${d.name}`} loading="lazy" decoding="async" />
+        ) : (
+          <div class="dossier-shot-empty">[no screenshot on file]</div>
+        )
+      }
+    </figure>
+    <div class="dossier-facts">
+      <h2 class="dossier-name">{d.name}</h2>
+      <dl class="fields">
+        <dt>Division</dt>
+        <dd><a href={url.division(d.division)}>{divisionName(d.division)}</a></dd>
+        <dt>Platform</dt>
+        <dd>{d.platform}</dd>
+        <dt>Status</dt>
+        <dd class={`status status-${d.status}`}>{STATUS_LABELS[d.status]}</dd>
+      </dl>
+      <p class="dossier-summary">{d.summary}</p>
+    </div>
+  </div>
+
+  <div class="prose">
+    <Content />
+  </div>
+
+  {
+    links.length > 0 && (
+      <section class="doc-section" aria-labelledby="dossier-links">
+        <h2 id="dossier-links">Links</h2>
+        <ul class="link-list">
+          {links.map((l) => (
+            <li>
+              <a href={l.href}>{l.label}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <p class="perms">-r--r----- board:assets <a href={url.division(d.division)}>cd ..</a></p>
+</Document>

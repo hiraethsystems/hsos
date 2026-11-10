@@ -22,3 +22,12 @@ export function divisionName(id: DivisionId): string {
 /** Project statuses, in lifecycle order. */
 export const STATUSES = ['planned', 'in-development', 'prototype', 'released', 'archived'] as const;
 export type Status = (typeof STATUSES)[number];
+
+/** How each status reads on a dossier. */
+export const STATUS_LABELS: Record<Status, string> = {
+  planned: 'Planned',
+  'in-development': 'In development',
+  prototype: 'Prototype',
+  released: 'Released',
+  archived: 'Archived',
+};

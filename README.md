@@ -106,6 +106,9 @@ upgrade before then.
 - `src/os/palette.ts`: the 256 colour palette, the only place colours are defined
 - `src/content/`: projects, memos and pages (Markdown)
 - `src/layouts/Document.astro`: the static page layout
+- `src/pages/`: one file per URL (Linux style paths, for example `srv/divisions/[division]/[slug].astro`)
+- `src/os/routes.ts`: every URL and filesystem path is built here
+- `src/os/links.ts`: the `hsos:open/<app>` link scheme used in Markdown
 - `scripts/check-colours.mjs`: fails `npm run check` if a colour is used outside the palette
 - `deploy/nginx/`: server config for the VPS
 - `scripts/deploy.sh`: build and upload

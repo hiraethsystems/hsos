@@ -1,0 +1,38 @@
+---
+/** A memo, rendered as an internal memorandum (SPEC 13). */
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import Document from '../../../../layouts/Document.astro';
+import { url, vfsPath } from '../../../../os/routes';
+import { formatDate, getMemos, isoDate, type Memo } from '../../../../site/content';
+
+export const getStaticPaths = (async () =>
+  (await getMemos()).map((memo) => ({ params: { slug: memo.id }, props: { memo } }))) satisfies GetStaticPaths;
+
+interface Props {
+  memo: Memo;
+}
+const { memo } = Astro.props;
+const d = memo.data;
+const { Content } = await render(memo);
+---
+
+<Document title={d.title} path={vfsPath.memo(memo.id)} section="memos" description={d.summary}>
+  <article class="memo">
+    <p class="memo-kind">Memorandum</p>
+    <h2 class="memo-title">{d.title}</h2>
+    {d.draft && <p class="notice">Draft. Not circulated, and only visible on the dev server.</p>}
+    <dl class="fields memo-head">
+      <dt>To</dt>
+      <dd>{d.to}</dd>
+      <dt>From</dt>
+      <dd>{d.from}</dd>
+      <dt>Date</dt>
+      <dd><time datetime={isoDate(d.date)}>{formatDate(d.date)}</time></dd>
+    </dl>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+  <p class="perms">-rw-r--r-- board:assets <a href={url.memos}>cd ..</a></p>
+</Document>

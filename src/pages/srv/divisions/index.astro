@@ -1,0 +1,37 @@
+---
+import Document from '../../../layouts/Document.astro';
+import ProjectList from '../../../components/ProjectList.astro';
+import { DIVISIONS } from '../../../os/divisions';
+import { url } from '../../../os/routes';
+import { getProjects } from '../../../site/content';
+
+const projects = await getProjects();
+---
+
+<Document
+  title="Divisions"
+  path={url.divisions}
+  ramp="files"
+  section="divisions"
+  description="Every project of Hiraeth Systems, filed by division."
+>
+  <p class="lede">Every product line, filed by division. Click an asset to open its dossier.</p>
+  {
+    DIVISIONS.map((d) => {
+      const inDivision = projects.filter((p) => p.data.division === d.id);
+      return (
+        <section class="doc-section" aria-labelledby={`division-${d.id}`}>
+          <h2 id={`division-${d.id}`}>
+            <a href={url.division(d.id)}>{d.name}</a>
+          </h2>
+          {inDivision.length ? (
+            <ProjectList projects={inDivision} showDivision={false} />
+          ) : (
+            <p class="empty-note">No assets on file. This division is self-sustaining.</p>
+          )}
+        </section>
+      );
+    })
+  }
+  <p class="perms">drwxr-x--- board:assets</p>
+</Document>

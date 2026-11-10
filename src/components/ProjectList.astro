@@ -1,0 +1,32 @@
+---
+/** A list of projects, as rows in the style of the Divisions window. */
+import { divisionName, STATUS_LABELS } from '../os/divisions';
+import { url } from '../os/routes';
+import type { Project } from '../site/content';
+
+interface Props {
+  projects: Project[];
+  /** Hide the division column when every row is in the same division. */
+  showDivision?: boolean;
+}
+const { projects, showDivision = true } = Astro.props;
+---
+
+<ul class="asset-list">
+  {
+    projects.map((p) => (
+      <li>
+        <a class="asset-row" href={url.dossier(p.data.division, p.id)}>
+          <span class="asset-name">{p.id}/</span>
+          <span class="asset-meta">
+            {showDivision && <>{divisionName(p.data.division)}. </>}
+            {STATUS_LABELS[p.data.status]}
+          </span>
+        </a>
+        <p class="asset-summary">
+          <strong>{p.data.name}</strong>: {p.data.summary}
+        </p>
+      </li>
+    ))
+  }
+</ul>

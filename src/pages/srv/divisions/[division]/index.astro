@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Document from '../../../../layouts/Document.astro';
+import ProjectList from '../../../../components/ProjectList.astro';
+import { DIVISIONS, type DivisionId } from '../../../../os/divisions';
+import { url } from '../../../../os/routes';
+import { getProjects } from '../../../../site/content';
+
+export const getStaticPaths = (() =>
+  DIVISIONS.map((d) => ({ params: { division: d.id }, props: { id: d.id, name: d.name } }))) satisfies GetStaticPaths;
+
+interface Props {
+  id: DivisionId;
+  name: string;
+}
+const { id, name } = Astro.props;
+const projects = await getProjects(id);
+---
+
+<Document
+  title={`${name} Division`}
+  path={url.division(id)}
+  ramp="files"
+  section="divisions"
+  description={`Projects filed under the ${name} division of Hiraeth Systems.`}
+>
+  <h2 class="page-heading">{name} Division</h2>
+  {
+    projects.length ? (
+      <ProjectList projects={projects} showDivision={false} />
+    ) : (
+      <p class="empty-note">No assets on file. This division is self-sustaining.</p>
+    )
+  }
+  <p class="perms">drwxr-x--- board:assets <a href={url.divisions}>cd ..</a></p>
+</Document>
