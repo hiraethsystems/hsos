@@ -62,7 +62,9 @@ Do these when the site is ready. Nothing here touches the Ghost site.
    sudo mkdir -p /var/www/hiraeth.systems
    sudo chown ubuntu:ubuntu /var/www/hiraeth.systems
    ```
-3. **nginx**: copy `deploy/nginx/hiraeth.systems.conf` to `/etc/nginx/sites-available/`,
+3. **nginx** (done 10 November 2026, stage 1): `deploy/nginx/hiraeth.systems.stage1-http.conf` is
+   what is installed now, plain HTTP. Stage 2 is the full file below, once the certificate exists.
+   Originally: copy `deploy/nginx/hiraeth.systems.conf` to `/etc/nginx/sites-available/`,
    symlink it into `/etc/nginx/sites-enabled/`, keep only the port 80 block active, then
    `sudo nginx -t && sudo systemctl reload nginx`.
 4. **Certificate**: first check how Ghost's certificates are managed:
