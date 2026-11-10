@@ -1,0 +1,562 @@
+# HSOS Design and Build Specification
+
+Version 1.0, 10 November 2026. Owner: Aisling (Hiraeth Systems).
+Domain: hiraeth.systems. Repository: `hsos` on the `hiraethsystems` GitHub account.
+
+This document records every decision made during the design phase. It is the source of truth.
+If something here turns out to be wrong or impractical, change this document first, then the code.
+
+---
+
+## 1. What HSOS is
+
+HSOS (Hiraeth Systems Operating System) is a personal website disguised as the in-browser
+operating system of **Hiraeth Systems**, a fictional mega corporation with a vaporwave, early
+1990s corporate soul. Visitors "log in" as an employee and explore the owner's projects as
+corporate assets filed under Divisions.
+
+Inspirations, in order of importance:
+
+- **TempleOS** (Terry A. Davis): the idea that the whole OS is one living hypertext document,
+  where any underlined word opens something, and that an OS can have an oracle. In HSOS the
+  religious framing is replaced by the corporation and its Board.
+- **Late 1980s to mid 1990s operating systems**: chunky windows, menu bars, desktop icons,
+  256 colour VGA era graphics, palette animation.
+- **Unix/Linux**: the filesystem, terminal and boot log are Linux flavoured, because the owner
+  uses Linux and because a Linux tree looks suitably cursed for a corporate portal.
+
+### 1.1 Lore (keep consistent)
+
+- HSOS 1.0 was a text mode system. It still runs underneath, mounted at `/mnt/legacy`, because
+  nobody signed the decommissioning form. The terminal is the "legacy text layer".
+- The current version is **HSOS 256**, kernel `2.0.36-corp`. Finance approved 256 colours and
+  is worried about the 248 still unspent.
+- **The Board** is the corporation's oracle. It speaks in random corporate and melancholy words
+  (a parody of TempleOS's random word oracle). It lives at `/opt/board/boardd`.
+- The visitor is `employee`, uid 1000, group `assets`. They are not in the sudoers file.
+- Products are filed into Divisions: Signals, Legacy Acquisitions, Leisure Compliance,
+  Defence Contracts, Morale (more can be added).
+- Nothing can be deleted, resigned from, or logged out of. Redundancies are handled by HR.
+
+### 1.2 Tone of voice
+
+Dry corporate satire, with occasional genuine warmth and melancholy (hiraeth means a longing
+for a home you cannot return to). Punch up at corporations and bureaucracy. Never mock the
+visitor, never mock the owner. Jokes should be short. Real project information must stay
+accurate and readable underneath the satire; the joke is the wrapper, never the content.
+
+Examples of the house style: "All feelings reserved." "Curiosity is billable."
+"Resignation is not available on your plan." "Bugs are features awaiting budget approval."
+
+---
+
+## 2. Goals and non-goals
+
+**Goals (v1)**
+
+- A mouse driven desktop with draggable, resizable, scrollable windows, dropdown menus and
+  desktop icons.
+- A boot sequence.
+- Every project has a dossier, readable both inside the OS and as a plain static page.
+- A working terminal with a fake but navigable Linux filesystem.
+- Settings (wallpaper, colour cycling, scanlines) remembered in the visitor's browser.
+- A clean app contract so new apps can be added for years without breaking the look.
+- Deployable as static files to the owner's existing VPS.
+
+**Non-goals (v1)**
+
+- No accounts, no database, no server-side code.
+- Visitors never run code on the server. Any future scripting runs in their own browser only.
+- No real emulators yet (see Roadmap for later ideas such as v86).
+
+---
+
+## 3. Architecture
+
+### 3.1 Two layers, one content source
+
+1. **Static layer (Astro pages).** Every piece of content has its own HTML page generated at
+   build time: home, project dossiers, memos, about. These pages work without JavaScript, are
+   readable by search engines and screen readers, and use a simple HSOS-styled document layout.
+2. **Shell layer (Preact island).** On capable desktop browsers the shell boots on top of the
+   page and becomes the desktop. Windows display the same content as the static pages.
+
+Deep links: visiting `/srv/divisions/signals/vitasdr/` (or whatever URL scheme we settle on,
+see 3.3) boots the shell and opens that dossier window directly. With JS off, the same URL
+shows the static dossier page.
+
+### 3.2 Suggested source layout
+
+```
+src/
+  content/
+    projects/        one Markdown file per project (dossiers)
+    memos/           blog posts, written as internal memos
+    pages/           welcome.md (WELCOME.dd), about, etc.
+  content.config.ts  collection schemas
+  pages/             Astro routes for the static layer
+  layouts/           static page layout (HSOS document style)
+  os/                the shell
+    palette.ts       the 256 entry palette and named ramps
+    boot/            boot sequence script and component
+    wm/              window manager (Window, drag, resize, focus, z-order)
+    menu/            menu bar and dropdowns
+    desktop/         wallpaper and icons
+    vfs/             virtual filesystem (tree + content mounts)
+    term/            terminal and command registry
+    apps/            one folder per app (see section 12)
+    sprites/         pixel art defined as palette index arrays
+    settings.ts      settings store (localStorage, wrapped in try/catch)
+  styles/            global CSS, fonts, scrollbar styling
+public/
+  fonts/             bitmap webfonts (licences in docs/CREDITS.md)
+  shots/             project screenshots (dithered to the palette at build, optional)
+```
+
+### 3.3 URLs
+
+Use Linux paths as URLs where sensible, they reinforce the joke and stay readable:
+
+- `/` home (boots the desktop)
+- `/srv/divisions/` list of divisions and products
+- `/srv/divisions/<division>/<slug>/` a project dossier
+- `/home/employee/memos/<slug>/` a memo (blog post)
+- `/home/employee/WELCOME.dd` may stay a window only, with `/welcome/` as its static page
+
+### 3.4 State
+
+- Settings persist in `localStorage` under key `hsos.settings.v1`. Every read and write is in
+  try/catch; the site must work when storage is blocked.
+- Window positions do not persist in v1 (fresh desktop each visit), except the boot preference.
+
+---
+
+## 4. Visual system
+
+### 4.1 Palette (256 colours)
+
+- Implement a real indexed palette in `src/os/palette.ts`: an array of exactly 256 hex colours.
+- Slots 0 to 15: the classic 16 colour set (used by the legacy terminal and text mode).
+- Remaining slots: named ramps used across the UI, generated once at build time by stepping
+  between key colours. Ramps used in the prototype:
+  - `heat` (32): `#04001a #14005a #4a0a8a #a0208a #ff4a4a #ffaa2a #ffee66 #ffffff` (waterfall)
+  - `cycle` (24): `#ff3a8a #ff8a3a #ffd23a #3ad27a #3aa8ff #8a3aff` and back (rainbow text)
+  - `sky` (12): `#140030 #2a0a5a #5a1280 #9a2090 #e0407a #ff8a5a #ffc04a` (sunset wallpaper)
+  - `sun` (10): `#fff27a #ffc04a #ff8a4a #ff5a6a #e03a8a`
+  - `grid` (16): `#ff3ad1 #a03aff #3ad1ff` and back (wallpaper grid lines)
+  - Window title ramps (4 steps each), see 4.3.
+- UI ink colours: text `#1a1a6b`, links `#b0105a`, link hover background `#ffe066`, muted
+  `#6a6a8a`, success `#14874a`, terminal green `#7dff9a`.
+- **Rule:** gradients are always stepped bands built from palette entries. No smooth gradients.
+
+### 4.2 Typography
+
+- Primary UI font: a bitmap style font. The prototype used VT323 as a stand-in. For the build,
+  evaluate fonts from the Ultimate Oldschool PC Font Pack (https://int10h.org/oldschool-pc-fonts/),
+  which ships `.woff` web versions under CC BY-SA 4.0 (credit VileR in `docs/CREDITS.md`).
+  Pick one for UI text and keep VT323 or a PC font for the terminal. Owner signs off the choice.
+- Body text in dossiers and memos must stay comfortable to read at length (the owner finds
+  dense reading hard): generous line height, short paragraphs, never tiny pixel fonts for prose.
+
+### 4.3 Window chrome
+
+- White window body, 2px solid border in the app's dark colour, 5px offset drop shadow in a
+  light tint of the app colour.
+- Title bar: 4 stepped bands left to right of the app's ramp, white text, path as title,
+  `[X]` close button on the right. Title bars are the drag handle.
+- App colour ramps (dark to light):
+  - Documents/Welcome: `#1a1a8c #2a2aa8 #3b3bc4 #4d4de0`
+  - Divisions/Files: `#0d6b3a #14874a #1ca35a #26bf6c`
+  - The Board: `#5a0d6b #741a87 #8f2aa3 #ab3dbf`
+  - Listening Post: `#0a5a6b #0f7387 #178ca3 #21a6bf`
+  - Ledger: `#8a3a00 #a85000 #c66a10 #e08a28`
+  - Dossier/HR: `#8a1a3a #a82a4a #c63a5a #e04a6a`
+  - Settings/System: `#3a3a4e #4a4a62 #5a5a76 #6a6a8a`
+  - Terminal: `#2a2a3a #3a3a4e #4a4a62 #5a5a76` on a `#05050f` body
+- Menu bar: stepped purple ramp `#1a0a4a #2a0f63 #3d167d #531e96 #6b28b0`, yellow
+  `#ffe066` bottom rule.
+
+### 4.4 Scrollbars
+
+Every window content area is a scroll container. Style scrollbars to match:
+16px wide, purple bevelled thumb (`#741a87 / #ab3dbf / #5a0d6b` bands, light top-left and
+dark bottom-right border), lilac checkered track, bevelled arrow buttons. Use
+`::-webkit-scrollbar` rules for Chromium and Safari, and `scrollbar-color` only where
+`::-webkit-scrollbar` is unsupported (Firefox), via `@supports not selector(::-webkit-scrollbar)`.
+
+### 4.5 Pixel art and graphics
+
+- Sprites are defined as arrays of palette indices (or palette names) and drawn to `<canvas>`
+  with `image-rendering: pixelated`, or as CSS grids for tiny ones. Keep them crisp: integer
+  scaling only.
+- Existing sprites from the prototype: 16x16 sliced sun diamond logo; 14x9 Board eye whose
+  iris colour cycles and which blinks every few seconds.
+- Graphics are allowed and encouraged (charts, waterfall, icons), always within the palette.
+
+### 4.6 Palette animation (colour cycling)
+
+- A single shared clock (about 6 ticks per second) drives all animation.
+- Cycling effects: rainbow title text, Board eye iris, sunset sun bands, wallpaper grid lines.
+- Implement as palette rotation (shifting which ramp entry each element uses), not as
+  per-frame redraws of large images where avoidable.
+- Off when the Settings checkbox is off, and always off under `prefers-reduced-motion`.
+
+### 4.7 Wallpapers
+
+Four built in, chosen in Settings:
+
+1. **Sunset** (default): 12 band sky, sliced sun, mountain silhouette, neon grid floor.
+2. **Corporate**: purple checkerboard with small gold dots, conference carpet energy.
+3. **Workbench**: stepped blue bands.
+4. **DolDoc Paper**: pale lilac page with a faint dot grid (the TempleOS look).
+
+### 4.8 CRT scanlines
+
+Optional full screen overlay of faint horizontal lines. Off by default. Never flickers.
+
+---
+
+## 5. Window manager
+
+- Open, focus (click anywhere in a window brings it to front), close.
+- Drag by title bar, using pointer events. Clamp so a window can never be lost off screen
+  (title bar always reachable).
+- Resize from a grip in the bottom right corner. Minimum size 240x140.
+- Content areas scroll automatically when content is larger than the window (section 4.4).
+- Singleton apps (most of them) re-focus their existing window instead of opening another.
+- Keyboard: windows are focusable; Escape closes the focused dialog; future shortcut to cycle
+  windows.
+- Later (not v1): minimise to desktop, maximise, window list, snapping.
+
+---
+
+## 6. Menu bar
+
+A permanent menu bar across the top, with dropdown menus. Behaviour:
+
+- Click a menu title to open it. While one menu is open, hovering another title switches to it.
+- Clicking outside, pressing Escape, or choosing an item closes the menu.
+- Keyboard: menus reachable by Tab, arrow keys move between items and menus, Enter activates.
+- Disabled items are shown greyed with a reason on the right.
+- Right side of the bar: a MORALE meter and a live clock.
+
+Menus and items (v1):
+
+- **◆ HSOS**: About HSOS, (separator), Workplace Settings, Reboot (`Ctrl+Alt+Del` label),
+  Log Out (disabled: "not on your plan")
+- **Files**: Home (`~/`), Divisions (`/srv/divisions`), Ledger (`/var/lib/ledger`),
+  (separator), Mount /mnt/legacy (HR memo: it has always been mounted),
+  Shred (disabled: "needs 3 signatures")
+- **Applications**: Terminal, The Board (`F7`), Listening Post 7, Ledger, (separator), Settings
+- **Divisions**: one item per project, labelled with its division, opening its dossier.
+  Generated from content.
+- **Help**: Employee Handbook (opens WELCOME.dd), man hsos (HR memo), (separator),
+  Report a Bug (HR memo: "Bugs are features awaiting budget approval.")
+
+---
+
+## 7. Desktop icons
+
+A column of icons down the right edge, each a small piece of pixel art with a white label tag:
+`divisions/`, `boardd`, `/dev/lp7`, `ledger`, `terminal`, `/etc/hsos`, `/dev/null`.
+Single click opens. `/dev/null` shows an HR memo ("Anything sent to /dev/null is reviewed by
+the Board within 0 working days.").
+
+---
+
+## 8. Boot sequence (must have)
+
+Full screen black screen, logo sprite and BIOS header, then lines appear one at a time,
+then a stepped rainbow progress bar fills, then the desktop appears.
+
+Script (keep the jokes, timing about 160ms per line):
+
+```
+HIRAETH SYSTEMS BIOS v4.04
+(C) 1987-2026 Hiraeth Systems. All feelings reserved.
+CPU: Synergy Processor 486DX2-66 ........ OK
+Memory test: 640K ......................... ENOUGH
+Detecting employee ........................ found (uid 1000)
+Detecting longing ......................... SEVERE
+Booting HSOS kernel 2.0.36-corp ...
+[    0.000000] HSOS version 2.0.36-corp (board@hiraeth) #1 SMP PREEMPT_BOARD
+[    0.104221] Command line: ro quiet compliance=strict appeals=0
+[    0.882013] palette: 256 colours approved by Finance
+[    1.320557] lp7: listening post registered on /dev/lp7
+[  OK  ] Mounted /srv/divisions.
+[  OK  ] Mounted /mnt/legacy (read-only, mostly).
+[  OK  ] Started Compliance Daemon (complianced).
+[  OK  ] Started The Board (boardd).
+[  OK  ] Started Listening Post 7 (lp7d).
+[ WARN ] Longing exceeds safe operating levels. Continuing anyway.
+[ FAIL ] Failed to start Work-Life Balance Service.
+         See 'journalctl -u balance' for details. Details unavailable.
+[  OK  ] Reached target Morale (within tolerance).
+[  OK  ] Started HSOS Display Manager.
+
+hsos login: employee
+Password: ********
+Last login: forever ago from the cafeteria.
+```
+
+Status tags: `[  OK  ]` green `#3aff7a`, `[ WARN ]` yellow `#ffd23a`, `[ FAIL ]` red `#ff4a6a`.
+Kernel lines in muted `#8a8aa8`.
+
+Rules:
+
+- Click anywhere, or press any key, to skip.
+- **First visit** in a browser: full boot. **Later visits**: a short boot (about one second,
+  just the BIOS header and "Last login") unless the visitor runs `reboot`.
+- `prefers-reduced-motion`: show the final screen instantly, then the desktop.
+- `reboot` in the terminal and Reboot in the menu replay the full boot.
+
+---
+
+## 9. Virtual filesystem
+
+A Linux style tree. Content collections are mounted into it automatically.
+
+```
+/
+├── bin/          bash  board  comply  resign (disabled)
+├── boot/         vmlinuz-2.0.36-corp  initrd-of-optimism.img
+├── corp/         mission.txt  org-chart.svg (classified)
+├── dev/          lp7  null  synergy  tty0
+├── etc/          hsos/workplace.conf  passwd (redacted)  motd
+├── home/employee/ WELCOME.dd  memos/  .bash_history (seized)
+├── mnt/legacy/   hsos-1.0-textmode/STILL_RUNNING.txt
+├── opt/board/    boardd  oracle.words
+├── proc/         1/cmdline  longing  morale  uptime
+├── srv/divisions/<division>/<project>/DOSSIER
+└── var/          lib/ledger/morale.csv  log/morale.log  log/complianced.log
+```
+
+Fixed file contents (from the prototype):
+
+- `/corp/mission.txt`: "To synergise longing at scale, for ever, for shareholders."
+- `/proc/longing`: "longing: 100% (all cores)"
+- `/proc/morale`: "morale: WITHIN TOLERANCE"
+- `/proc/uptime`: "uptime: since before you were hired"
+- `/proc/1/cmdline`: "/sbin/board --forever --no-appeals"
+- `/etc/motd`: "Message of the day: there is no day, only the quarter."
+- `/mnt/legacy/hsos-1.0-textmode/STILL_RUNNING.txt`: "Yes. Nobody signed the decommissioning form."
+- `/var/log/morale.log`: permission denied (write-only)
+
+Opening certain files opens apps: `WELCOME.dd` opens the document viewer, `morale.csv` opens
+the Ledger, `workplace.conf` opens Settings, any `DOSSIER` opens that project's dossier.
+
+---
+
+## 10. Terminal
+
+- Prompt: `employee@hsos:<path>$`, with the home directory shown as `~`.
+- Output scrolls (newest at bottom), keeps the last 120 lines, coloured per line.
+- Command history with Up/Down arrows (new in build). Tab completion of paths (new in build).
+- Commands are registered through a command registry so apps can add their own.
+
+v1 commands:
+
+| Command | Behaviour |
+|---|---|
+| `help` | List commands |
+| `ls [path]` | List a directory (`dir` alias) |
+| `cd [path]` | Change directory, `~` and `..` supported, refuse non-directories |
+| `pwd` | Print working directory |
+| `cat FILE` | Print a file, or open the matching app (see section 9) |
+| `open X` | Open an app or a project by name/slug |
+| `board` / F7 | Print a Board directive and update the Board window |
+| `wall X` | Set wallpaper: sunset, corporate, workbench, paper |
+| `palette` | Print colour bars and Finance's concern |
+| `uname -a` | `HSOS hsos 2.0.36-corp #1 SMP PREEMPT_BOARD i486 Hiraeth/Systems` |
+| `whoami` | `employee (uid=1000 gid=1000(assets) groups=1000(assets),27(sudo-pending))` |
+| `sudo`, `su` | Not in the sudoers file, incident reported to the Board |
+| `rm` | Refuses: redundancies are handled by HR |
+| `exit`, `logout`, `resign` | Not available on your plan |
+| `reboot`, `shutdown` | Broadcast message, then full boot |
+| `clear` | Clears output |
+| anything else | `<cmd>: command not found. This incident has been logged.` |
+
+Later: a small scripting language (working name CorpScript), or real Lua via a WebAssembly
+build, running only in the visitor's browser. Not in v1.
+
+---
+
+## 11. Apps in v1
+
+All behaviours below exist in the prototype unless marked (new).
+
+1. **WELCOME.dd** (`/home/employee/WELCOME.dd`): the handbook. Logo sprite, colour cycling
+   "HIRAETH SYSTEMS" title, hyperlinked text where underlined words open apps, sections:
+   Today's directives, Filesystem orientation, Your rights (intentionally left blank).
+   Content comes from `src/content/pages/welcome.md`; links in it use a custom syntax to open
+   apps (for example `[Listening Post](hsos:open/listening)`).
+2. **Divisions** (`/srv/divisions/`): list of projects with small icons, slug and division.
+   Clicking opens the dossier.
+3. **Dossier** (`/srv/divisions/<division>/<slug>/DOSSIER`): screenshot panel, name, division,
+   platform, status, description, links (new: repo and download links).
+4. **The Board** (`/opt/board/boardd`): eye sprite, a six word directive drawn from the word
+   list, Consult button. Word list is in section 15.
+5. **Listening Post 7** (`/dev/lp7`): animated waterfall (56 columns x 18 rows, heat ramp),
+   four fake drifting signals, two keying like Morse, drifting frequency readout around
+   7.074.000 kHz LSB. Only animates while the window is open. Later: optional live data.
+6. **Ledger** (`/var/lib/ledger/morale.csv`): stepped colour bar chart "Morale by Quarter",
+   Q1 to Q7 and Q∞, Reforecast randomises it.
+7. **Settings** (`/etc/hsos/workplace.conf`): wallpaper picker with thumbnails, colour cycling
+   toggle, CRT scanline toggle, (new) "full boot every visit" toggle. Saved to localStorage.
+8. **Terminal**: section 10.
+9. **HR memo dialog**: small modal used for jokes and system messages, single Acknowledge button.
+
+---
+
+## 12. App contract (how to add new apps)
+
+Every app is a folder in `src/os/apps/<id>/` exporting a manifest:
+
+```ts
+export interface HsosApp {
+  id: string;                    // 'ledger'
+  title: string;                 // 'Ledger'
+  path: string;                  // '/var/lib/ledger/morale.csv', shown in the title bar
+  ramp: RampName;                // title bar colour ramp from palette.ts
+  icon?: Sprite;                 // desktop / menu icon
+  defaultRect: { x: number; y: number; w: number; h: number };
+  minSize?: { w: number; h: number };
+  singleton?: boolean;           // default true
+  menu?: { menu: 'files' | 'apps' | 'help'; label: string; key?: string }[];
+  commands?: TerminalCommand[];  // terminal commands this app adds
+  vfs?: VfsMount[];              // files/dirs this app adds to the filesystem
+  component: (props: AppProps) => JSX.Element; // window contents only
+}
+```
+
+`AppProps` gives the app a small context: `open(appId, args?)`, `memo(text)`, `vfs`,
+`settings`, `palette`, `clock` (the shared animation tick) and `args`.
+
+Apps draw only their window contents. The window manager owns chrome, title, drag, resize,
+scrolling and focus. This is what keeps every future app looking like part of one suite.
+
+---
+
+## 13. Content model
+
+`src/content/projects/<slug>.md` frontmatter:
+
+```yaml
+name: VitaSDR
+slug: vitasdr
+division: signals            # signals | legacy-acquisitions | leisure-compliance | defence-contracts | morale
+platform: PS Vita, C, VitaSDK
+status: in-development      # planned | in-development | prototype | released | archived
+summary: One or two plain sentences, no satire.
+screenshot: /shots/vitasdr.png   # optional
+icon: vitasdr                    # sprite id, optional
+links:
+  repo: https://github.com/hiraethsystems/...
+  release: ...
+order: 10
+```
+
+The Markdown body is the full description. Satire may live in the dossier chrome; the
+description itself stays factual so people can actually learn about the project.
+
+`src/content/memos/<slug>.md`: title, date, from (a Division), to (default "All Employees"),
+summary, body. Rendered as an internal memorandum.
+
+Initial projects (descriptions are placeholders until the owner supplies real ones, see
+`docs/CONTENT.md`): VitaSDR (Signals), DX Garden (Signals), Moon Child Vita (Legacy
+Acquisitions), DreamKartsU (Leisure Compliance), RBR-1 (Defence Contracts).
+
+---
+
+## 14. Phones and small screens
+
+Below 900px wide, run **HSOS Handheld** mode:
+
+- No dragging or overlapping. One app fills the screen at a time.
+- The menu bar collapses to a single ◆ menu listing everything.
+- Desktop icons become a home screen grid.
+- Boot sequence still plays (short version), skippable by tap.
+
+---
+
+## 15. Text resources
+
+**Board word list** (extend freely, keep the corporate plus melancholy mix):
+QUARTERLY ripple LEVERAGE yearning dividend SEAMLESS synergy impermanence PIVOT gently ALIGN
+longing stakeholder TIDE "circle back" bandwidth HIRAETH dawn SCALE static compliance grace
+DISRUPT mist offboard ETERNAL headcount moth DELIVERABLE harbour optimise silence KPI
+reception onboarding ghost VERTICAL sea runway dusk.
+Capitalisation is part of the effect: mixed upper and lower case words.
+
+**Welcome copy**: see `docs/reference/prototype.dc.html`, Welcome window, and reuse it.
+
+**Bilingual (later)**: Cymraeg and English toggle. Any Welsh must be checked by a fluent
+speaker before going live.
+
+---
+
+## 16. Accessibility and quality bar
+
+- Real semantic controls. Visible focus outlines styled to match.
+- Text contrast at least 4.5:1 against its background.
+- Decorative sprites `aria-hidden`; meaningful graphics have labels.
+- No-JS and reduced motion both fully supported (section 3, 4.6, 8).
+- No layout shift during boot. The shell must stay responsive while animating.
+- Lighthouse style checks on the static pages: fast, accessible, indexable.
+
+---
+
+## 17. Deployment
+
+- Build on Saoirse: `npm run build` produces `dist/`.
+- Deploy with `scripts/deploy.sh`, which rsyncs `dist/` to `/var/www/hiraeth.systems/` on the
+  VPS over SSH. Host and user come from environment variables, never committed.
+- VPS: Ubuntu 22.04 with nginx, already serving the Ghost site hiraeth.club. HSOS gets its own
+  server block (`deploy/nginx/hiraeth.systems.conf`) and its own TLS certificate. Never edit
+  the Ghost nginx files.
+- TLS: the Ghost install appears to manage certificates with acme.sh in `/etc/letsencrypt`.
+  Check that first, and reuse it for hiraeth.systems; otherwise use certbot. See README.
+- Note for later: Ubuntu 22.04 leaves standard support in May 2027. Plan the VPS upgrade
+  before then.
+
+---
+
+## 18. Build phases
+
+Each phase ends with a working build, a commit, and a plain English summary to the owner.
+
+0. **Scaffold**: Astro + TypeScript + Preact, content collections, palette.ts, fonts,
+   CREDITS.md, lint/check scripts. Static page layout in HSOS document style.
+1. **Static layer**: home, divisions list, dossier pages, memo pages, all working with JS off.
+2. **Shell core**: desktop, wallpapers, window manager (drag, resize, focus, scroll),
+   menu bar with dropdowns, desktop icons, HR memo dialog.
+3. **Boot sequence** (section 8), including first visit / later visit logic.
+4. **Apps**: WELCOME.dd, Divisions, Dossier, The Board, Ledger, Settings, Listening Post 7.
+5. **Terminal and VFS**: command registry, history, tab completion, filesystem mounts.
+6. **Polish**: colour cycling, scanlines, keyboard support, reduced motion, Handheld mode.
+7. **Deploy**: nginx server block, TLS, deploy script, go live.
+
+## 19. Ideas backlog (after v1)
+
+From the design session, in rough priority order:
+
+- Crash screen easter egg (blue "Synergy Exception" screen, triggered by commands like
+  `unionise` or `rm -rf /`).
+- Visitor ID badge with promotions earned by exploring, stored locally only.
+- Memo archive (blog) styling and RSS feed.
+- Screensaver after idle time ("Your manager has been notified").
+- Cafeteria Radio music player for the owner's own tracks.
+- Sprite Studio, a 16/256 colour pixel editor.
+- Built-in mini games (Quarterly Targets).
+- Live Listening Post fed from the owner's own receiver.
+- Cymraeg / English toggle.
+- Suggestion Box guestbook and shared Employee Wall (these need a small server API).
+- CorpScript or Lua scripting in the terminal.
+- v86 based "legacy division" running a real old OS in a window.
+
+## 20. Open decisions (owner to confirm)
+
+- Final UI and terminal fonts.
+- Exact URL scheme (section 3.3 proposal).
+- Whether the boot plays in full on every visit or only the first (spec default: first only).
+- Real project descriptions and screenshots (`docs/CONTENT.md`).

@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HSOS interactive prototype</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#b0105a}a:hover{color:#2a2aa8}
+.hs-link{font:inherit;color:#b0105a;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+.hs-link:hover{color:#2a2aa8;background:#ffe066}
+.hs-menu{font:inherit;border:0;padding:0 10px;height:28px;cursor:pointer}
+.hs-mi{font:inherit;color:#1a1a6b;background:none;border:0;padding:2px 14px;width:100%;text-align:left;display:flex;justify-content:space-between;gap:24px;cursor:pointer}
+.hs-mi:hover:not(:disabled){background:linear-gradient(90deg,#2a2aa8 0 25%,#3b3bc4 25% 50%,#4d4de0 50% 75%,#5a5af0 75%);color:#ffffff}
+.hs-mi:disabled{color:#a8a8c0;cursor:not-allowed}
+.hs-x{font:inherit;color:#ffffff;background:none;border:0;padding:0 4px;cursor:pointer}
+.hs-x:hover{background:#e0405a}
+.hs-tb{flex:none;color:#ffffff;padding:0 4px 0 10px;display:flex;justify-content:space-between;cursor:move;user-select:none;white-space:nowrap;overflow:hidden}
+.hs-btn{font:inherit;background:linear-gradient(#ab3dbf 0 50%,#8f2aa3 50%);color:#ffffff;border:2px solid #3a0a48;padding:2px 12px;cursor:pointer}
+.hs-btn:hover{background:linear-gradient(#ffe066 0 50%,#ffc61a 50%);color:#3a0a48}
+.hs-row{font:inherit;color:#1a1a6b;background:none;border:0;padding:2px 6px;text-align:left;cursor:pointer;width:100%;display:flex;align-items:center;gap:8px}
+.hs-row:hover{background:linear-gradient(90deg,#2a2aa8,#5a5af0);color:#ffffff}
+.hs-ico{font:inherit;color:#1a1a6b;background:none;border:0;padding:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;width:84px;text-align:center}
+.hs-ico span:last-child{background:#ffffff;padding:0 4px;border:1px solid #1a1a6b}
+.hs-ico:hover span:last-child{background:#2a2aa8;color:#ffffff}
+.hs-wp{font:inherit;color:#1a1a6b;background:#ffffff;border:2px solid #c8c8d8;padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:center}
+.hs-wp:hover{border-color:#2a2aa8}
+.hs-chk{display:flex;align-items:center;gap:8px;cursor:pointer}
+.hs-chk input{width:18px;height:18px;accent-color:#8f2aa3;cursor:pointer}
+.hs-in{font:inherit;color:#7dff9a;background:transparent;border:0;outline:none;flex:1;min-width:0;caret-color:#7dff9a}
+.hs-grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 0 50%,#1a1a6b 50% 58%,transparent 58% 70%,#1a1a6b 70% 78%,transparent 78%)}
+.hs-skip{font:inherit;background:none;color:#ffe066;border:2px solid #ffe066;padding:0 10px;cursor:pointer}
+.hs-skip:hover{background:#ffe066;color:#000}
+.hs-scroll{overflow:auto}
+.hs-scroll::-webkit-scrollbar{width:16px;height:16px}
+.hs-scroll::-webkit-scrollbar-track{background-color:#ece8ff;background-image:conic-gradient(#ddd6ff 0 25%,transparent 25% 50%,#ddd6ff 50% 75%,transparent 75%);background-size:4px 4px}
+.hs-scroll::-webkit-scrollbar-thumb{background:linear-gradient(90deg,#741a87 0 20%,#ab3dbf 20% 80%,#5a0d6b 80%);border:2px solid;border-color:#e0a8ff #3a0a48 #3a0a48 #e0a8ff}
+.hs-scroll::-webkit-scrollbar-thumb:horizontal{background:linear-gradient(#741a87 0 20%,#ab3dbf 20% 80%,#5a0d6b 80%)}
+.hs-scroll::-webkit-scrollbar-button:single-button{display:block;width:16px;height:16px;background-color:#d8d0f0;border:2px solid;border-color:#ffffff #6a6a8a #6a6a8a #ffffff}
+.hs-scroll::-webkit-scrollbar-corner{background:#d8d0f0}
+@supports not selector(::-webkit-scrollbar){.hs-scroll{scrollbar-color:#8f2aa3 #ece8ff}}
+</style>
+</helmet>
+<div onPointerMove="{{onMove}}" onPointerUp="{{onUp}}" onPointerLeave="{{onUp}}" style="width:1280px;height:800px;position:relative;overflow:hidden;font-family:'VT323',monospace;font-size:22px;line-height:24px;color:#1a1a6b;background:#12002a">
+
+<sc-if value="{{wp.paper}}" hint-placeholder-val="{{ false }}">
+<div aria-hidden="true" style="position:absolute;inset:0;background-color:#f6f3ff;background-image:radial-gradient(#e2dcff 1px,transparent 1px);background-size:6px 6px"></div>
+</sc-if>
+<sc-if value="{{wp.sunset}}" hint-placeholder-val="{{ true }}">
+<div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden">
+<div style="position:absolute;left:0;top:0;right:0;height:520px;background:{{sky}}"></div>
+<div style="position:absolute;left:520px;top:200px;width:340px;height:340px;border-radius:50%;background:{{sun}}"></div>
+<div style="position:absolute;left:0;right:0;top:400px;height:120px;background:#2a0a4a;clip-path:polygon(0 100%,0 60%,8% 30%,16% 55%,26% 10%,36% 50%,44% 35%,52% 70%,62% 25%,72% 55%,82% 15%,92% 45%,100% 30%,100% 100%)"></div>
+<div style="position:absolute;left:0;right:0;top:520px;bottom:0;background-color:#12002a;background-image:repeating-linear-gradient(0deg,{{gridC}} 0 2px,transparent 2px 34px),repeating-linear-gradient(90deg,{{gridC}} 0 2px,transparent 2px 90px);border-top:3px solid {{gridC}}"></div>
+</div>
+</sc-if>
+<sc-if value="{{wp.tile}}" hint-placeholder-val="{{ false }}">
+<div aria-hidden="true" style="position:absolute;inset:0;background-color:#3d167d;background-image:conic-gradient(#531e96 0 25%,#3d167d 25% 50%,#531e96 50% 75%,#3d167d 75%),radial-gradient(circle,#ffe066 0 3px,transparent 4px);background-size:80px 80px,40px 40px;background-position:0 0,20px 20px"></div>
+</sc-if>
+<sc-if value="{{wp.workbench}}" hint-placeholder-val="{{ false }}">
+<div aria-hidden="true" style="position:absolute;inset:0;background:linear-gradient(#0a3a7a 0 14%,#0d4688 14% 28%,#105296 28% 42%,#145ea4 42% 56%,#196ab2 56% 70%,#1f76bf 70% 84%,#2682cc 84%)"></div>
+</sc-if>
+
+<sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+<div onPointerDown="{{closeMenus}}" style="position:absolute;inset:0;z-index:9990"></div>
+</sc-if>
+
+<div style="position:absolute;left:0;top:0;right:0;height:30px;background:linear-gradient(90deg,#1a0a4a 0 20%,#2a0f63 20% 40%,#3d167d 40% 60%,#531e96 60% 80%,#6b28b0 80%);color:#ffffff;display:flex;align-items:center;padding:0 6px;box-sizing:border-box;z-index:9999;border-bottom:2px solid #ffe066">
+<sc-for list="{{menus}}" as="m" hint-placeholder-count="5">
+<div style="position:relative">
+<button class="hs-menu" type="button" onClick="{{m.toggle}}" onPointerEnter="{{m.enter}}" style="background:{{m.bg}};color:{{m.fg}}">{{m.label}}</button>
+<sc-if value="{{m.open}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;top:28px;min-width:280px;background:#ffffff;border:2px solid #1a1a6b;box-shadow:5px 5px 0 rgba(26,26,107,0.45);padding:4px 0;z-index:10000">
+<sc-for list="{{m.items}}" as="it" hint-placeholder-count="4">
+<sc-if value="{{it.sep}}" hint-placeholder-val="{{ false }}"><div style="height:2px;margin:4px 8px;background:repeating-linear-gradient(90deg,#1a1a6b 0 4px,transparent 4px 8px)"></div></sc-if>
+<sc-if value="{{it.item}}" hint-placeholder-val="{{ true }}"><button class="hs-mi" type="button" disabled="{{it.dis}}" onClick="{{it.run}}"><span>{{it.label}}</span><span style="opacity:0.65">{{it.key}}</span></button></sc-if>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<span style="margin-left:auto;color:#ffe066">MORALE</span>
+<span style="display:flex;gap:2px;margin-left:6px" aria-hidden="true"><span style="width:6px;height:14px;background:#26bf6c"></span><span style="width:6px;height:14px;background:#7dd94a"></span><span style="width:6px;height:14px;background:#ffe066"></span><span style="width:6px;height:14px;background:#5a4a8a"></span></span>
+<span style="margin-left:14px;margin-right:6px">{{clock}}</span>
+</div>
+
+<div style="position:absolute;right:6px;top:44px;display:flex;flex-direction:column;gap:6px;z-index:1">
+<button class="hs-ico" type="button" onClick="{{tasks.products}}"><span aria-hidden="true" style="position:relative;width:48px;height:38px"><span style="position:absolute;left:0;top:0;width:20px;height:8px;background:linear-gradient(90deg,#c67a00,#e09a10)"></span><span style="position:absolute;left:0;top:6px;width:48px;height:32px;background:linear-gradient(#fff3b0 0 25%,#ffe066 25% 50%,#ffcb1a 50% 75%,#f0a800 75%);border:2px solid #7a4a00;box-sizing:border-box"></span></span><span>divisions/</span></button>
+<button class="hs-ico" type="button" onClick="{{tasks.oracle}}"><span aria-hidden="true" style="width:44px;height:44px;border-radius:50%;background:radial-gradient(#000 0 18%,#2a2aa8 19% 30%,#5a8aff 31% 40%,#ffffff 41% 62%,#ffd0f0 63% 72%,#ab3dbf 73%);border:2px solid #3a0a48"></span><span>boardd</span></button>
+<button class="hs-ico" type="button" onClick="{{tasks.listening}}"><span aria-hidden="true" style="width:48px;height:38px;border:2px solid #0a2a3a;box-sizing:border-box;background:linear-gradient(90deg,#08002a 0 18%,#3a0a8a 18% 22%,#ff5a3a 22% 26%,#3a0a8a 26% 30%,#08002a 30% 58%,#ffe066 58% 61%,#08002a 61% 80%,#7a2aff 80% 84%,#08002a 84%)"></span><span>/dev/lp7</span></button>
+<button class="hs-ico" type="button" onClick="{{tasks.ledger}}"><span aria-hidden="true" style="width:46px;height:38px;background:#ffffff;border:2px solid #1a1a6b;box-sizing:border-box;display:flex;align-items:flex-end;gap:3px;padding:3px"><span style="flex:1;height:40%;background:linear-gradient(#7dff9a,#14874a)"></span><span style="flex:1;height:75%;background:linear-gradient(#ffe066,#c66a10)"></span><span style="flex:1;height:55%;background:linear-gradient(#ff8ab0,#b0105a)"></span><span style="flex:1;height:95%;background:linear-gradient(#a8a8ff,#2a2aa8)"></span></span><span>ledger</span></button>
+<button class="hs-ico" type="button" onClick="{{tasks.term}}"><span aria-hidden="true" style="width:48px;height:38px;background:#000;border:2px solid #555;box-sizing:border-box;color:#7dff9a;padding:2px 5px">$_</span><span>terminal</span></button>
+<button class="hs-ico" type="button" onClick="{{tasks.settings}}"><span aria-hidden="true" style="width:42px;height:42px;border-radius:50%;border:2px solid #1a1a3a;box-sizing:border-box;background:radial-gradient(#1a0a4a 0 22%,#e8e8f8 23% 40%,#b8b8d0 41% 55%,#8a8aa8 56% 70%,transparent 71%),conic-gradient(#5a5a76 0 10%,transparent 10% 15%,#5a5a76 15% 35%,transparent 35% 40%,#5a5a76 40% 60%,transparent 60% 65%,#5a5a76 65% 85%,transparent 85% 90%,#5a5a76 90%)"></span><span>/etc/hsos</span></button>
+<button class="hs-ico" type="button" onClick="{{trash}}"><span aria-hidden="true" style="width:36px;height:42px;background:linear-gradient(90deg,#6a6a7a 0 20%,#a8a8b8 20% 40%,#d8d8e8 40% 60%,#a8a8b8 60% 80%,#6a6a7a 80%);border:2px solid #2a2a3a;border-top-width:7px;box-sizing:border-box"></span><span>/dev/null</span></button>
+</div>
+
+<sc-if value="{{w.welcome.open}}" hint-placeholder-val="{{ true }}">
+<div onPointerDown="{{w.welcome.focus}}" style="position:absolute;left:{{w.welcome.x}}px;top:{{w.welcome.y}}px;z-index:{{w.welcome.z}};width:{{w.welcome.w}}px;height:{{w.welcome.h}}px;border:2px solid #1a1a6b;background:#ffffff;box-sizing:border-box;box-shadow:5px 5px 0 #c8bfff;display:flex;flex-direction:column">
+<div onPointerDown="{{w.welcome.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#1a1a8c 0 25%,#2a2aa8 25% 50%,#3b3bc4 50% 75%,#4d4de0 75%)"><span>/home/employee/WELCOME.dd</span><button class="hs-x" type="button" aria-label="Close Welcome" onClick="{{w.welcome.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;padding:14px 18px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:20px;align-items:center;flex:none">
+<div aria-hidden="true" style="display:grid;grid-template-columns:repeat(16,6px);grid-template-rows:repeat(16,6px);flex:none">
+<sc-for list="{{logo}}" as="px" hint-placeholder-count="256"><div style="background:{{px}}"></div></sc-for>
+</div>
+<div>
+<div style="font-size:40px;line-height:40px;display:flex;white-space:pre"><sc-for list="{{title}}" as="ch" hint-placeholder-count="15"><span style="color:{{ch.c}}">{{ch.t}}</span></sc-for></div>
+<div style="color:#14874a">The Corporation's Official Workplace. 256 colours. One voice.</div>
+</div>
+</div>
+<div>Welcome, <span style="color:#8f2aa3">employee</span> (uid 1000, group: assets). Every underlined word is a live object. Use the menus along the top, drag windows by their title bars, and resize them from the bottom-right corner. Open <button class="hs-link" type="button" onClick="{{tasks.products}}">/srv/divisions</button>, tune into <button class="hs-link" type="button" onClick="{{tasks.listening}}">/dev/lp7</button>, review the <button class="hs-link" type="button" onClick="{{tasks.ledger}}">ledger</button>, or consult <button class="hs-link" type="button" onClick="{{tasks.oracle}}">The Board</button>.</div>
+<div style="border-top:2px dashed #2a2aa8;padding-top:10px;color:#b0105a">§1 Today's directives</div>
+<div style="padding-left:18px;display:flex;flex-direction:column;gap:2px">
+<div>• Type <span style="background:#000;color:#7dff9a;padding:0 4px">help</span> in the <button class="hs-link" type="button" onClick="{{tasks.term}}">terminal</button>. Curiosity is billable.</div>
+<div>• Press <span style="background:#2a2aa8;color:#fff;padding:0 4px">F7</span> in the terminal to hear from the Board.</div>
+<div>• The colour budget has been increased to 256. Spend it wisely.</div>
+</div>
+<div style="border-top:2px dashed #2a2aa8;padding-top:10px;color:#b0105a">§2 Filesystem orientation</div>
+<div style="padding-left:18px;display:flex;flex-direction:column;gap:2px">
+<div><span style="color:#14874a">/home/employee</span>  your desk. Personal effects will be audited.</div>
+<div><span style="color:#14874a">/srv/divisions</span>  every product line, filed by division.</div>
+<div><span style="color:#14874a">/opt/board</span>  where the Board lives. Do not feed.</div>
+<div><span style="color:#14874a">/proc/longing</span>  a live reading of longing across all cores.</div>
+<div><span style="color:#14874a">/var/log/morale.log</span>  write-only. Nobody reads it.</div>
+<div><span style="color:#14874a">/mnt/legacy</span>  HSOS 1.0, still running, never decommissioned.</div>
+<div><span style="color:#14874a">/dev/null</span>  the suggestion box.</div>
+</div>
+<div style="border-top:2px dashed #2a2aa8;padding-top:10px;color:#b0105a">§3 Your rights</div>
+<div style="padding-left:18px">This section has been intentionally left blank. Scroll bars are provided so you can confirm this for yourself.</div>
+</div>
+<div onPointerDown="{{w.welcome.resize}}" class="hs-grip" aria-hidden="true"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{w.products.open}}" hint-placeholder-val="{{ true }}">
+<div onPointerDown="{{w.products.focus}}" style="position:absolute;left:{{w.products.x}}px;top:{{w.products.y}}px;z-index:{{w.products.z}};width:{{w.products.w}}px;height:{{w.products.h}}px;border:2px solid #0d6b3a;background:#ffffff;box-sizing:border-box;box-shadow:5px 5px 0 #b8e8c8;display:flex;flex-direction:column">
+<div onPointerDown="{{w.products.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#0d6b3a 0 25%,#14874a 25% 50%,#1ca35a 50% 75%,#26bf6c 75%)"><span>/srv/divisions/</span><button class="hs-x" type="button" aria-label="Close divisions" onClick="{{w.products.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;padding:8px 10px;display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{products}}" as="p" hint-placeholder-count="5">
+<button class="hs-row" type="button" onClick="{{p.open}}"><span aria-hidden="true" style="width:20px;height:20px;flex:none;background:{{p.icon}};border:1px solid #1a1a6b"></span><span style="flex:1;white-space:nowrap">{{p.slug}}/</span><span style="opacity:0.7;white-space:nowrap">{{p.div}}</span></button>
+</sc-for>
+<div style="margin-top:8px;color:#6a6a8a;padding:0 6px">drwxr-x--- board:assets  Click an asset to open its dossier.</div>
+</div>
+<div onPointerDown="{{w.products.resize}}" class="hs-grip" aria-hidden="true"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{w.oracle.open}}" hint-placeholder-val="{{ true }}">
+<div onPointerDown="{{w.oracle.focus}}" style="position:absolute;left:{{w.oracle.x}}px;top:{{w.oracle.y}}px;z-index:{{w.oracle.z}};width:{{w.oracle.w}}px;height:{{w.oracle.h}}px;border:2px solid #5a0d6b;background:#ffffff;box-sizing:border-box;box-shadow:5px 5px 0 #e8c8f0;display:flex;flex-direction:column">
+<div onPointerDown="{{w.oracle.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#5a0d6b 0 25%,#741a87 25% 50%,#8f2aa3 50% 75%,#ab3dbf 75%)"><span>/opt/board/boardd</span><button class="hs-x" type="button" aria-label="Close the Board" onClick="{{w.oracle.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;padding:12px 14px;display:flex;gap:14px">
+<div aria-hidden="true" style="flex:none;display:grid;grid-template-columns:repeat(14,6px);grid-template-rows:repeat(9,6px);align-self:flex-start;margin-top:6px">
+<sc-for list="{{eye}}" as="px" hint-placeholder-count="126"><div style="background:{{px}}"></div></sc-for>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<div style="font-size:28px;line-height:30px;color:#b0105a;min-height:90px">{{oracleText}}</div>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<button class="hs-btn" type="button" onClick="{{consult}}">Consult the Board</button>
+<span style="color:#6a6a8a;font-size:18px">Interpretation is your responsibility.</span>
+</div>
+</div>
+</div>
+<div onPointerDown="{{w.oracle.resize}}" class="hs-grip" aria-hidden="true"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{w.listening.open}}" hint-placeholder-val="{{ true }}">
+<div onPointerDown="{{w.listening.focus}}" style="position:absolute;left:{{w.listening.x}}px;top:{{w.listening.y}}px;z-index:{{w.listening.z}};width:{{w.listening.w}}px;height:{{w.listening.h}}px;border:2px solid #0a5a6b;background:#ffffff;box-sizing:border-box;box-shadow:5px 5px 0 #b8e0e8;display:flex;flex-direction:column">
+<div onPointerDown="{{w.listening.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#0a5a6b 0 25%,#0f7387 25% 50%,#178ca3 50% 75%,#21a6bf 75%)"><span>/dev/lp7 · Listening Post 7</span><button class="hs-x" type="button" aria-label="Close Listening Post" onClick="{{w.listening.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;padding:6px 10px;display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;gap:14px;align-items:baseline;flex:none"><span style="font-size:28px;line-height:28px;color:#b0105a">{{freq}}</span><span>kHz LSB</span><span style="margin-left:auto;color:#6a6a8a;white-space:nowrap">intercepts are company property</span></div>
+<div aria-hidden="true" style="flex:none;display:grid;grid-template-columns:repeat(56,minmax(0,1fr));background:#000000;border:2px solid #0a2a3a">
+<sc-for list="{{wf}}" as="c" hint-placeholder-count="1008"><div style="height:8px;background:{{c}}"></div></sc-for>
+</div>
+</div>
+<div onPointerDown="{{w.listening.resize}}" class="hs-grip" aria-hidden="true"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{w.ledger.open}}" hint-placeholder-val="{{ false }}">
+<div onPointerDown="{{w.ledger.focus}}" style="position:absolute;left:{{w.ledger.x}}px;top:{{w.ledger.y}}px;z-index:{{w.ledger.z}};width:{{w.ledger.w}}px;height:{{w.ledger.h}}px;border:2px solid #8a3a00;background:#ffffff;box-sizing:border-box;box-shadow:5px 5px 0 #f0d8c0;display:flex;flex-direction:column">
+<div onPointerDown="{{w.ledger.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#8a3a00 0 25%,#a85000 25% 50%,#c66a10 50% 75%,#e08a28 75%)"><span>/var/lib/ledger/morale.csv</span><button class="hs-x" type="button" aria-label="Close ledger" onClick="{{w.ledger.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;padding:10px 16px;display:flex;flex-direction:column;gap:6px">
+<div style="flex:none;min-width:380px;height:130px;display:flex;align-items:flex-end;gap:10px;border-bottom:2px solid #1a1a6b;border-left:2px solid #1a1a6b;padding:0 8px;background:repeating-linear-gradient(0deg,#f0ecff 0 1px,transparent 1px 26px)">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="8"><div style="flex:1;height:{{b.h}}px;background:{{b.c}};border:1px solid #1a1a6b;border-bottom:0"></div></sc-for>
+</div>
+<div style="flex:none;min-width:380px;display:flex;gap:10px;padding:0 8px;color:#6a6a8a;font-size:18px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="8"><span style="flex:1;text-align:center">{{b.q}}</span></sc-for>
+</div>
+<button class="hs-link" type="button" onClick="{{reforecast}}" style="align-self:flex-start">Reforecast (numbers are illustrative, like all numbers)</button>
+</div>
+<div onPointerDown="{{w.ledger.resize}}" class="hs-grip" aria-hidden="true"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{w.detail.open}}" hint-placeholder-val="{{ false }}">
+<div onPointerDown="{{w.detail.focus}}" style="position:absolute;left:{{w.detail.x}}px;top:{{w.detail.y}}px;z-index:{{w.detail.z}};width:{{w.detail.w}}px;height:{{w.detail.h}}px;border:2px solid #8a1a3a;background:#ffffff;box-sizing:border-box;box-shadow:5px 5px 0 #f0c8d0;display:flex;flex-direction:column">
+<div onPointerDown="{{w.detail.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#8a1a3a 0 25%,#a82a4a 25% 50%,#c63a5a 50% 75%,#e04a6a 75%)"><span>/srv/divisions/{{sel.dslug}}/{{sel.slug}}/DOSSIER</span><button class="hs-x" type="button" aria-label="Close dossier" onClick="{{w.detail.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;padding:12px 16px;display:flex;gap:16px">
+<div style="width:200px;height:150px;flex:none;border:2px solid #1a1a6b;background-color:{{sel.shade}};background-image:{{sel.art}};display:flex;align-items:flex-end;justify-content:center;color:#ffffff;font-size:18px;padding-bottom:4px;box-sizing:border-box;text-shadow:1px 1px 0 #000">[screenshot]</div>
+<div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:30px;line-height:32px;color:#b0105a">{{sel.name}}</div>
+<div><span style="color:#6a6a8a">Division .</span> {{sel.div}}</div>
+<div><span style="color:#6a6a8a">Platform .</span> {{sel.platform}}</div>
+<div><span style="color:#6a6a8a">Status . .</span> <span style="color:#14874a">{{sel.status}}</span></div>
+<div style="border-top:2px dashed #c63a5a;padding-top:6px;font-size:20px;line-height:22px">{{sel.blurb}}</div>
+</div>
+</div>
+<div onPointerDown="{{w.detail.resize}}" class="hs-grip" aria-hidden="true"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{w.settings.open}}" hint-placeholder-val="{{ false }}">
+<div onPointerDown="{{w.settings.focus}}" style="position:absolute;left:{{w.settings.x}}px;top:{{w.settings.y}}px;z-index:{{w.settings.z}};width:{{w.settings.w}}px;height:{{w.settings.h}}px;border:2px solid #2a2a3a;background:#ffffff;box-sizing:border-box;box-shadow:5px 5px 0 #c8c8d8;display:flex;flex-direction:column">
+<div onPointerDown="{{w.settings.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#3a3a4e 0 25%,#4a4a62 25% 50%,#5a5a76 50% 75%,#6a6a8a 75%)"><span>/etc/hsos/workplace.conf</span><button class="hs-x" type="button" aria-label="Close settings" onClick="{{w.settings.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;padding:12px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="color:#b0105a">Wallpaper</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:10px">
+<sc-for list="{{wallpapers}}" as="o" hint-placeholder-count="4">
+<button class="hs-wp" type="button" onClick="{{o.pick}}" style="border-color:{{o.ring}}"><span aria-hidden="true" style="width:100%;height:62px;background:{{o.thumb}};border:1px solid #1a1a6b"></span><span>{{o.name}}</span></button>
+</sc-for>
+</div>
+<div style="color:#b0105a;margin-top:4px">Effects</div>
+<label class="hs-chk"><input type="checkbox" checked="{{cycle}}" onChange="{{toggleCycle}}">Colour cycling (palette animation)</label>
+<label class="hs-chk"><input type="checkbox" checked="{{scan}}" onChange="{{toggleScan}}">CRT scanlines</label>
+<div style="color:#6a6a8a">Changes are logged in your personnel file.</div>
+</div>
+<div onPointerDown="{{w.settings.resize}}" class="hs-grip" aria-hidden="true"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{w.term.open}}" hint-placeholder-val="{{ true }}">
+<div onPointerDown="{{w.term.focus}}" style="position:absolute;left:{{w.term.x}}px;top:{{w.term.y}}px;z-index:{{w.term.z}};width:{{w.term.w}}px;height:{{w.term.h}}px;border:2px solid #000000;background:#05050f;color:#c8c8d8;box-sizing:border-box;display:flex;flex-direction:column;box-shadow:5px 5px 0 #c8bfff">
+<div onPointerDown="{{w.term.drag}}" class="hs-tb" style="background:linear-gradient(90deg,#2a2a3a 0 25%,#3a3a4e 25% 50%,#4a4a62 50% 75%,#5a5a76 75%)"><span>employee@hsos: {{promptPath}}</span><button class="hs-x" type="button" aria-label="Close terminal" onClick="{{w.term.close}}">[X]</button></div>
+<div class="hs-scroll" style="flex:1;min-height:0;display:flex;flex-direction:column-reverse;padding:8px 12px">
+<div>
+<sc-for list="{{lines}}" as="l" hint-placeholder-count="4"><div style="color:{{l.c}};white-space:pre-wrap">{{l.t}}</div></sc-for>
+</div>
+</div>
+<div style="flex:none;display:flex;gap:8px;padding:0 18px 8px 12px"><label for="hs-term-in" style="color:#7dff9a;white-space:nowrap">employee@hsos:{{promptPath}}$</label><input id="hs-term-in" class="hs-in" type="text" autocomplete="off" spellcheck="false" value="{{termInput}}" onChange="{{onTermChange}}" onKeyDown="{{onTermKey}}"></div>
+<div onPointerDown="{{w.term.resize}}" class="hs-grip" aria-hidden="true" style="background:linear-gradient(135deg,transparent 0 50%,#7dff9a 50% 58%,transparent 58% 70%,#7dff9a 70% 78%,transparent 78%)"></div>
+</div>
+</sc-if>
+
+<sc-if value="{{scan}}" hint-placeholder-val="{{ false }}">
+<div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:99998;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.16) 0 1px,transparent 1px 3px)"></div>
+</sc-if>
+
+<sc-if value="{{memo}}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:400px;top:300px;z-index:99999;width:440px;border:2px solid #000;background:#ffffff;box-shadow:6px 6px 0 #1a1a6b">
+<div style="background:linear-gradient(90deg,#8a1a3a 0 25%,#a82a4a 25% 50%,#c63a5a 50% 75%,#e04a6a 75%);color:#ffffff;padding:0 10px">Memo from HR</div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<div>{{memo}}</div>
+<button class="hs-btn" type="button" style="align-self:flex-end" onClick="{{closeMemo}}">Acknowledge</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{booting}}" hint-placeholder-val="{{ false }}">
+<div onClick="{{skipBoot}}" style="position:absolute;inset:0;z-index:100000;background:#000000;color:#c8c8d8;padding:22px 36px;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;cursor:default">
+<div style="display:flex;gap:18px;align-items:center;margin-bottom:12px;flex:none">
+<div aria-hidden="true" style="display:grid;grid-template-columns:repeat(16,4px);grid-template-rows:repeat(16,4px)">
+<sc-for list="{{logo}}" as="px" hint-placeholder-count="256"><div style="background:{{px}}"></div></sc-for>
+</div>
+<div><div style="color:#ffe066">HIRAETH SYSTEMS BIOS v4.04</div><div>(C) 1987-2026 Hiraeth Systems. All feelings reserved.</div></div>
+</div>
+<div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end">
+<sc-for list="{{bootLines}}" as="b" hint-placeholder-count="8"><div style="white-space:pre"><span style="color:{{b.tc}}">{{b.tag}}</span><span style="color:{{b.c}}">{{b.t}}</span></div></sc-for>
+</div>
+<div style="flex:none;margin-top:14px;display:flex;align-items:center;gap:16px">
+<div style="width:420px;height:16px;border:2px solid #555577;padding:2px;box-sizing:content-box"><div style="height:16px;width:{{bootPct}}%;background:linear-gradient(90deg,#ff3a8a 0 20%,#ff8a3a 20% 40%,#ffd23a 40% 60%,#3ad27a 60% 80%,#3aa8ff 80%);background-size:420px 16px"></div></div>
+<span>{{bootPct}}%</span>
+<button class="hs-skip" type="button" onClick="{{skipBoot}}">Click to skip</button>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+var HS_WORDS = ['QUARTERLY','ripple','LEVERAGE','yearning','dividend','SEAMLESS','synergy','impermanence','PIVOT','gently','ALIGN','longing','stakeholder','TIDE','circle back','bandwidth','HIRAETH','dawn','SCALE','static','compliance','grace','DISRUPT','mist','offboard','ETERNAL','headcount','moth','DELIVERABLE','harbour','optimise','silence','KPI','reception','onboarding','ghost','VERTICAL','sea','runway','dusk'];
+var HS_PRODUCTS = [
+  { name: 'VitaSDR', slug: 'vitasdr', div: 'Signals', dslug: 'signals', platform: 'PS Vita, C, VitaSDK', status: 'IN DEVELOPMENT', blurb: 'Homebrew client for KiwiSDR and OpenWebRX receivers, with a waterfall display. [Placeholder blurb]', icon: 'linear-gradient(135deg,#bff4ff 0 33%,#21a6bf 33% 66%,#0a5a6b 66%)', shade: '#0a5a6b', art: 'linear-gradient(#08002a 0 20%,#3a0a8a 20% 40%,#21a6bf 40% 55%,#ffe066 55% 60%,#3a0a8a 60% 80%,#08002a 80%)' },
+  { name: 'DX Garden', slug: 'dx-garden', div: 'Signals', dslug: 'signals', platform: 'PS Vita, Dreamcast (planned)', status: 'PLANNED', blurb: 'A globe you spin to find internet radio stations. [Placeholder blurb]', icon: 'radial-gradient(circle at 35% 35%,#b8ff9a 0 25%,#26bf6c 26% 55%,#2a5aa8 56%)', shade: '#0a1a3a', art: 'radial-gradient(circle at 50% 55%,#b8ff9a 0 12%,#26bf6c 13% 30%,#2a5aa8 31% 45%,#0a1a3a 46%)' },
+  { name: 'Moon Child Vita', slug: 'moon-child-vita', div: 'Legacy Acquisitions', dslug: 'legacy-acquisitions', platform: 'PS Vita', status: 'IN DEVELOPMENT', blurb: 'A port of Moon Child to the PS Vita. [Placeholder blurb]', icon: 'radial-gradient(circle at 65% 40%,#1a0a4a 0 32%,#fff6a0 33%)', shade: '#1a0a4a', art: 'radial-gradient(circle at 60% 35%,#1a0a4a 0 14%,#fff6a0 15% 24%,#3d167d 25% 50%,#1a0a4a 51%)' },
+  { name: 'DreamKartsU', slug: 'dreamkartsu', div: 'Leisure Compliance', dslug: 'leisure-compliance', platform: 'Wii U', status: 'IN DEVELOPMENT', blurb: 'A port of the DreamKarts homebrew kart racer. [Placeholder blurb]', icon: 'linear-gradient(#ff8ab0 0 50%,#2a2a3a 50%)', shade: '#2a2a3a', art: 'linear-gradient(#5a8aff 0 30%,#a8c8ff 30% 45%,#26bf6c 45% 60%,#555566 60% 80%,#2a2a3a 80%)' },
+  { name: 'RBR-1', slug: 'rbr-1', div: 'Defence Contracts', dslug: 'defence-contracts', platform: 'OpenSCAD, 3D print', status: 'PROTOTYPE', blurb: 'A 90cm cyberpunk rubber band marksman rifle. Non-lethal, like all our policies. [Placeholder blurb]', icon: 'linear-gradient(90deg,#555566 0 70%,#ff5ac8 70%)', shade: '#1a1a2a', art: 'linear-gradient(#1a1a2a 0 40%,#ff5ac8 40% 44%,#555566 44% 56%,#1a1a2a 56%)' }
+];
+var HS_HOME = '/home/employee';
+var HS_FS = {
+  '/': ['bin/', 'boot/', 'corp/', 'dev/', 'etc/', 'home/', 'mnt/', 'opt/', 'proc/', 'srv/', 'var/'],
+  '/bin': ['bash', 'board', 'comply', 'resign (disabled)'],
+  '/boot': ['vmlinuz-2.0.36-corp', 'initrd-of-optimism.img'],
+  '/corp': ['mission.txt', 'org-chart.svg (classified)'],
+  '/dev': ['lp7', 'null', 'synergy', 'tty0'],
+  '/etc': ['hsos/', 'passwd (redacted)', 'motd'],
+  '/etc/hsos': ['workplace.conf'],
+  '/home': ['employee/'],
+  '/home/employee': ['WELCOME.dd', 'memos/', '.bash_history (seized)'],
+  '/home/employee/memos': ['memo-0042.txt', 'memo-0041.txt'],
+  '/mnt': ['legacy/'],
+  '/mnt/legacy': ['hsos-1.0-textmode/'],
+  '/mnt/legacy/hsos-1.0-textmode': ['STILL_RUNNING.txt'],
+  '/opt': ['board/'],
+  '/opt/board': ['boardd', 'oracle.words'],
+  '/proc': ['1/', 'longing', 'morale', 'uptime'],
+  '/proc/1': ['cmdline'],
+  '/srv': ['divisions/'],
+  '/srv/divisions': ['signals/', 'legacy-acquisitions/', 'leisure-compliance/', 'defence-contracts/'],
+  '/srv/divisions/signals': ['vitasdr/', 'dx-garden/'],
+  '/srv/divisions/legacy-acquisitions': ['moon-child-vita/'],
+  '/srv/divisions/leisure-compliance': ['dreamkartsu/'],
+  '/srv/divisions/defence-contracts': ['rbr-1/'],
+  '/var': ['lib/', 'log/'],
+  '/var/lib': ['ledger/'],
+  '/var/lib/ledger': ['morale.csv'],
+  '/var/log': ['morale.log', 'complianced.log']
+};
+HS_PRODUCTS.forEach(function (p) { HS_FS['/srv/divisions/' + p.dslug + '/' + p.slug] = ['DOSSIER']; });
+var HS_FILES = {
+  '/corp/mission.txt': 'To synergise longing at scale, for ever, for shareholders.',
+  '/proc/longing': 'longing: 100% (all cores)',
+  '/proc/morale': 'morale: WITHIN TOLERANCE',
+  '/proc/uptime': 'uptime: since before you were hired',
+  '/proc/1/cmdline': '/sbin/board --forever --no-appeals',
+  '/etc/motd': 'Message of the day: there is no day, only the quarter.',
+  '/mnt/legacy/hsos-1.0-textmode/STILL_RUNNING.txt': 'Yes. Nobody signed the decommissioning form.',
+  '/var/log/morale.log': 'cat: /var/log/morale.log: Permission denied (write-only)',
+  '/opt/board/oracle.words': HS_WORDS.slice(0, 10).join(' ') + ' ...'
+};
+var HS_BOOT = [
+  ['', '#c8c8d8', 'CPU: Synergy Processor 486DX2-66 ........ OK'],
+  ['', '#c8c8d8', 'Memory test: 640K ......................... ENOUGH'],
+  ['', '#c8c8d8', 'Detecting employee ........................ found (uid 1000)'],
+  ['', '#c8c8d8', 'Detecting longing ......................... SEVERE'],
+  ['', '#ffe066', 'Booting HSOS kernel 2.0.36-corp ...'],
+  ['', '#8a8aa8', '[    0.000000] HSOS version 2.0.36-corp (board@hiraeth) #1 SMP PREEMPT_BOARD'],
+  ['', '#8a8aa8', '[    0.104221] Command line: ro quiet compliance=strict appeals=0'],
+  ['', '#8a8aa8', '[    0.882013] palette: 256 colours approved by Finance'],
+  ['', '#8a8aa8', '[    1.320557] lp7: listening post registered on /dev/lp7'],
+  ['[  OK  ] ', '#c8c8d8', 'Mounted /srv/divisions.'],
+  ['[  OK  ] ', '#c8c8d8', 'Mounted /mnt/legacy (read-only, mostly).'],
+  ['[  OK  ] ', '#c8c8d8', 'Started Compliance Daemon (complianced).'],
+  ['[  OK  ] ', '#c8c8d8', 'Started The Board (boardd).'],
+  ['[  OK  ] ', '#c8c8d8', 'Started Listening Post 7 (lp7d).'],
+  ['[ WARN ] ', '#c8c8d8', 'Longing exceeds safe operating levels. Continuing anyway.'],
+  ['[ FAIL ] ', '#c8c8d8', 'Failed to start Work-Life Balance Service.'],
+  ['', '#8a8aa8', "         See 'journalctl -u balance' for details. Details unavailable."],
+  ['[  OK  ] ', '#c8c8d8', 'Reached target Morale (within tolerance).'],
+  ['[  OK  ] ', '#c8c8d8', 'Started HSOS Display Manager.'],
+  ['', '#c8c8d8', ''],
+  ['', '#c8c8d8', 'hsos login: employee'],
+  ['', '#c8c8d8', 'Password: ********'],
+  ['', '#ffe066', 'Last login: forever ago from the cafeteria.']
+].map(function (r) {
+  var tc = r[0].indexOf('OK') >= 0 ? '#3aff7a' : r[0].indexOf('WARN') >= 0 ? '#ffd23a' : '#ff4a6a';
+  return { tag: r[0], tc: tc, c: r[1], t: r[2] };
+});
+
+function hsLerp(a, b, t) {
+  var pa = [parseInt(a.slice(1, 3), 16), parseInt(a.slice(3, 5), 16), parseInt(a.slice(5, 7), 16)];
+  var pb = [parseInt(b.slice(1, 3), 16), parseInt(b.slice(3, 5), 16), parseInt(b.slice(5, 7), 16)];
+  var out = '#';
+  for (var i = 0; i < 3; i++) { var v = Math.round(pa[i] + (pb[i] - pa[i]) * t); out += (v < 16 ? '0' : '') + v.toString(16); }
+  return out;
+}
+function hsRamp(stops, n) {
+  var out = [];
+  for (var i = 0; i < n; i++) {
+    var f = i / (n - 1) * (stops.length - 1);
+    var k = Math.min(stops.length - 2, Math.floor(f));
+    out.push(hsLerp(stops[k], stops[k + 1], f - k));
+  }
+  return out;
+}
+var HS_HEAT = hsRamp(['#04001a', '#14005a', '#4a0a8a', '#a0208a', '#ff4a4a', '#ffaa2a', '#ffee66', '#ffffff'], 32);
+var HS_CYCLE = hsRamp(['#ff3a8a', '#ff8a3a', '#ffd23a', '#3ad27a', '#3aa8ff', '#8a3aff', '#ff3a8a'], 24);
+var HS_SUN = hsRamp(['#ffee66', '#ffaa2a', '#ff5a5a', '#d02a8a', '#6a1aa8'], 9);
+var HS_SKY = hsRamp(['#140030', '#2a0a5a', '#5a1280', '#9a2090', '#e0407a', '#ff8a5a', '#ffc04a'], 12);
+var HS_SKYCSS = 'linear-gradient(' + HS_SKY.map(function (c, i) { return c + ' ' + (i * 100 / 12).toFixed(2) + '% ' + ((i + 1) * 100 / 12).toFixed(2) + '%'; }).join(',') + ')';
+var HS_SUNR = hsRamp(['#fff27a', '#ffc04a', '#ff8a4a', '#ff5a6a', '#e03a8a'], 10);
+var HS_GRIDR = hsRamp(['#ff3ad1', '#a03aff', '#3ad1ff', '#a03aff', '#ff3ad1'], 16);
+var HS_WALLS = [
+  { id: 'sunset', name: 'Sunset', thumb: 'linear-gradient(#2a0a5a 0 30%,#9a2090 30% 45%,#ff8a5a 45% 60%,#12002a 60%)' },
+  { id: 'tile', name: 'Corporate', thumb: 'conic-gradient(#531e96 0 25%,#3d167d 25% 50%,#531e96 50% 75%,#3d167d 75%) 0 0/20px 20px' },
+  { id: 'workbench', name: 'Workbench', thumb: 'linear-gradient(#0a3a7a 0 33%,#145ea4 33% 66%,#2682cc 66%)' },
+  { id: 'paper', name: 'DolDoc Paper', thumb: '#f6f3ff' }
+];
+function hsSun(phase) {
+  var parts = [];
+  for (var i = 0; i < 10; i++) {
+    var k = (i + phase) % 18;
+    var c = HS_SUNR[k < 10 ? k : 18 - k];
+    var a = i * 10, b = (i + 1) * 10;
+    if (i >= 5) { var g = a + (i - 4) * 1.6; parts.push('transparent ' + a + '% ' + g.toFixed(1) + '%'); parts.push(c + ' ' + g.toFixed(1) + '% ' + b + '%'); }
+    else parts.push(c + ' ' + a + '% ' + b + '%');
+  }
+  return 'linear-gradient(' + parts.join(',') + ')';
+}
+var HS_LOGO = (function () {
+  var px = [];
+  for (var y = 0; y < 16; y++) {
+    for (var x = 0; x < 16; x++) {
+      var d = Math.abs(x - 7.5) + Math.abs(y - 7.5);
+      var c = 'transparent';
+      if (d <= 8) {
+        c = HS_SUN[Math.min(8, Math.floor(y / 2))];
+        if (y >= 9 && (y % 2 === 0)) c = 'transparent';
+        if (d > 7.2) c = '#4d4de0';
+      }
+      px.push(c);
+    }
+  }
+  return px;
+})();
+function hsPick() {
+  var out = [];
+  for (var i = 0; i < 6; i++) out.push(HS_WORDS[Math.floor(Math.random() * HS_WORDS.length)]);
+  return out.join(' ');
+}
+function hsBars() {
+  var qs = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q∞'];
+  var hues = [['#ff8ab0', '#b0105a'], ['#ffd08a', '#c66a10'], ['#ffee88', '#c6a010'], ['#9affb0', '#14874a'], ['#9af0ff', '#0f7387'], ['#a8a8ff', '#2a2aa8'], ['#e0a8ff', '#741a87'], ['#ffb0c0', '#8a1a3a']];
+  return qs.map(function (q, i) {
+    var r = hsRamp(hues[i], 4);
+    return { q: q, h: 20 + Math.floor(Math.random() * 105), c: 'linear-gradient(90deg,' + r[0] + ' 0 25%,' + r[1] + ' 25% 50%,' + r[2] + ' 50% 75%,' + r[3] + ' 75%)' };
+  });
+}
+var HS_COLS = 56, HS_ROWS = 18;
+function hsRow(sigs, t) {
+  var row = [];
+  for (var c = 0; c < HS_COLS; c++) {
+    var v = Math.random() * 7;
+    for (var k = 0; k < sigs.length; k++) {
+      var s = sigs[k];
+      var d = Math.abs(c - s.x);
+      var on = s.morse ? ((Math.floor(t / s.morse) % 3) !== 0) : true;
+      if (on) { if (d < 0.6) v += s.p; else if (d < 1.6) v += s.p * 0.45; else if (d < 2.6) v += s.p * 0.15; }
+    }
+    row.push(HS_HEAT[Math.max(0, Math.min(31, Math.floor(v)))]);
+  }
+  return row;
+}
+function hsResolve(cwd, p) {
+  if (!p) return cwd;
+  p = p.replace(/^~/, HS_HOME);
+  var parts = p.charAt(0) === '/' ? [] : cwd.split('/').filter(Boolean);
+  p.split('/').forEach(function (seg) {
+    if (!seg || seg === '.') return;
+    if (seg === '..') parts.pop(); else parts.push(seg);
+  });
+  return '/' + parts.join('/');
+}
+function hsPretty(path) {
+  if (path === HS_HOME) return '~';
+  if (path.indexOf(HS_HOME + '/') === 0) return '~' + path.slice(HS_HOME.length);
+  return path;
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.sigs = [{ x: 9, p: 26, morse: 0 }, { x: 22, p: 18, morse: 2 }, { x: 36, p: 30, morse: 0 }, { x: 47, p: 14, morse: 3 }];
+    var wf = [];
+    for (var r = 0; r < HS_ROWS; r++) wf = hsRow(this.sigs, r).concat(wf);
+    this.state = {
+      pos: {
+        welcome: { x: 20, y: 44, w: 640, h: 440, open: true, z: 3 },
+        products: { x: 680, y: 44, w: 480, h: 260, open: true, z: 2 },
+        oracle: { x: 680, y: 318, w: 480, h: 200, open: true, z: 2 },
+        listening: { x: 680, y: 532, w: 480, h: 240, open: true, z: 2 },
+        ledger: { x: 300, y: 160, w: 480, h: 260, open: false, z: 1 },
+        detail: { x: 340, y: 200, w: 580, h: 300, open: false, z: 1 },
+        settings: { x: 340, y: 140, w: 580, h: 360, open: false, z: 1 },
+        term: { x: 20, y: 500, w: 640, h: 272, open: true, z: 4 }
+      },
+      wall: 'sunset', cycle: true, scan: false,
+      menu: null,
+      top: 10, drag: null, sel: 0, tick: 0, wf: wf, freq: '7.074.000', memo: '',
+      booting: true, bootIdx: 0,
+      cwd: HS_HOME,
+      oracleText: 'SYNERGISE the longing. Q3 is ETERNAL.',
+      bars: hsBars(), termInput: '', clock: '',
+      lines: [
+        { t: 'HSOS 256 · kernel 2.0.36-corp · All feelings reserved.', c: '#c8c8d8' },
+        { t: 'Type help for permitted commands. Type ls to see what you are permitted to see.', c: '#ffe066' }
+      ]
+    };
+  }
+  componentDidMount() {
+    var self = this;
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    this.timer = setInterval(function () {
+      var d = new Date();
+      var t = self.state.tick + 1;
+      var patch = { tick: t, clock: p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) };
+      if (self.state.booting) {
+        var bi = self.state.bootIdx + 1;
+        patch.bootIdx = bi;
+        if (bi > HS_BOOT.length + 5) patch.booting = false;
+      } else if (self.state.pos.listening.open) {
+        self.sigs.forEach(function (s) { if (Math.random() < 0.08) s.x = Math.max(2, Math.min(HS_COLS - 3, s.x + (Math.random() < 0.5 ? -1 : 1))); });
+        patch.wf = hsRow(self.sigs, t).concat(self.state.wf.slice(0, HS_COLS * (HS_ROWS - 1)));
+        var f = String(7074000 + Math.round(Math.sin(t / 20) * 400));
+        patch.freq = f.slice(0, 1) + '.' + f.slice(1, 4) + '.' + f.slice(4);
+      }
+      self.setState(patch);
+    }, 160);
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  setWin(id, patch) {
+    var pos = Object.assign({}, this.state.pos);
+    pos[id] = Object.assign({}, pos[id], patch);
+    this.setState({ pos: pos });
+  }
+  focus(id) {
+    var top = this.state.top + 1;
+    var pos = Object.assign({}, this.state.pos);
+    pos[id] = Object.assign({}, pos[id], { z: top });
+    this.setState({ pos: pos, top: top });
+  }
+  open(id) {
+    var top = this.state.top + 1;
+    var pos = Object.assign({}, this.state.pos);
+    pos[id] = Object.assign({}, pos[id], { open: true, z: top });
+    this.setState({ pos: pos, top: top, menu: null });
+  }
+  openProduct(i) { this.setState({ sel: i }); this.open('detail'); }
+  reboot() { this.setState({ booting: true, bootIdx: 0, menu: null }); }
+  startDrag(id, e, mode) {
+    if (e.target && e.target.tagName === 'BUTTON') return;
+    e.preventDefault();
+    e.stopPropagation();
+    this.focus(id);
+    var p = this.state.pos[id];
+    this.setState({ drag: { id: id, mode: mode, sx: e.clientX, sy: e.clientY, ox: p.x, oy: p.y, ow: p.w, oh: p.h } });
+  }
+  move(e) {
+    var d = this.state.drag;
+    if (!d) return;
+    var r = e.currentTarget.getBoundingClientRect();
+    var sc = r.width / 1280 || 1;
+    var dx = (e.clientX - d.sx) / sc, dy = (e.clientY - d.sy) / sc;
+    if (d.mode === 'resize') {
+      this.setWin(d.id, { w: Math.round(Math.max(240, Math.min(1260, d.ow + dx))), h: Math.round(Math.max(140, Math.min(770, d.oh + dy))) });
+    } else {
+      this.setWin(d.id, { x: Math.round(Math.max(-300, Math.min(1180, d.ox + dx))), y: Math.round(Math.max(30, Math.min(760, d.oy + dy))) });
+    }
+  }
+  say(newLines) { this.setState({ lines: this.state.lines.concat(newLines).slice(-120) }); }
+  consult() { var t = hsPick(); this.setState({ oracleText: t }); return t; }
+  run(raw) {
+    var cmd = raw.trim();
+    var cwd = this.state.cwd;
+    var echo = { t: 'employee@hsos:' + hsPretty(cwd) + '$ ' + cmd, c: '#7dff9a' };
+    if (!cmd) { this.say([echo]); return; }
+    var parts = cmd.split(/\s+/);
+    var verb = parts[0].toLowerCase();
+    var arg = parts.slice(1).join(' ');
+    var out = [];
+    var G = '#c8c8d8', R = '#ff6a8a', Y = '#ffe066', C = '#9af0ff';
+    if (verb === 'help') {
+      out = ['help             this list', 'ls [path]        list a directory', 'cd [path]        change directory', 'pwd              print working directory', 'cat FILE         read a file', 'open X           welcome, divisions, board, listening, ledger, settings, or a product', 'board            consult the Board (or press F7)', 'wall X           wallpaper: sunset, corporate, workbench, paper', 'palette          audit the colour budget', 'uname -a         system information', 'reboot           restart HSOS', 'clear            destroy the evidence'].map(function (t) { return { t: t, c: G }; });
+    } else if (verb === 'pwd') {
+      out = [{ t: cwd, c: G }];
+    } else if (verb === 'ls' || verb === 'dir') {
+      var target = hsResolve(cwd, arg.replace(/^-\S+\s*/, ''));
+      var list = HS_FS[target];
+      if (list) out = [{ t: list.join('   '), c: C }];
+      else if (HS_FILES[target]) out = [{ t: target, c: G }];
+      else out = [{ t: 'ls: cannot access ' + target + ': It may have been restructured.', c: R }];
+    } else if (verb === 'cd') {
+      var dest = hsResolve(cwd, arg || HS_HOME);
+      if (HS_FS[dest]) { this.setState({ cwd: dest }); this.say([echo]); return; }
+      out = [{ t: 'cd: ' + dest + ': Not a directory you are cleared for.', c: R }];
+    } else if (verb === 'cat' || verb === 'less' || verb === 'more') {
+      var fp = hsResolve(cwd, arg);
+      if (fp === HS_HOME + '/WELCOME.dd') { this.open('welcome'); out = [{ t: 'Opened ' + fp + ' in the document viewer.', c: G }]; }
+      else if (fp === '/var/lib/ledger/morale.csv') { this.open('ledger'); out = [{ t: 'Opened ' + fp + '.', c: G }]; }
+      else if (fp === '/etc/hsos/workplace.conf') { this.open('settings'); out = [{ t: 'Opened ' + fp + '.', c: G }]; }
+      else if (/\/DOSSIER$/.test(fp)) {
+        var pi = HS_PRODUCTS.findIndex(function (p) { return fp.indexOf('/' + p.slug + '/') >= 0; });
+        if (pi >= 0) { this.openProduct(pi); out = [{ t: 'Dossier retrieved: ' + HS_PRODUCTS[pi].name, c: G }]; }
+      }
+      else if (HS_FILES[fp]) out = [{ t: HS_FILES[fp], c: G }];
+      else if (HS_FS[fp]) out = [{ t: 'cat: ' + fp + ': Is a directory. Directories cannot be read, only obeyed.', c: R }];
+      else out = [{ t: 'cat: ' + (arg || '?') + ': Permission denied. This attempt has been noted.', c: R }];
+    } else if (verb === 'open') {
+      var al = { welcome: 'welcome', divisions: 'products', products: 'products', board: 'oracle', oracle: 'oracle', listening: 'listening', lp7: 'listening', ledger: 'ledger', settings: 'settings', term: 'term', terminal: 'term' };
+      var key = arg.toLowerCase();
+      var idx = HS_PRODUCTS.findIndex(function (p) { return p.slug === key.replace(/\s+/g, '-') || p.name.toLowerCase() === key; });
+      if (al[key]) { this.open(al[key]); out = [{ t: 'Opened ' + key + '.', c: G }]; }
+      else if (idx >= 0) { this.openProduct(idx); out = [{ t: 'Dossier retrieved: ' + HS_PRODUCTS[idx].name, c: G }]; }
+      else out = [{ t: 'open: no such asset. It may have been restructured.', c: R }];
+    } else if (verb === 'board') {
+      out = [{ t: this.consult(), c: Y }];
+    } else if (verb === 'wall' || verb === 'wallpaper') {
+      var map = { sunset: 'sunset', corporate: 'tile', tile: 'tile', workbench: 'workbench', paper: 'paper' };
+      if (map[arg.toLowerCase()]) { this.setState({ wall: map[arg.toLowerCase()] }); out = [{ t: 'Wallpaper approved: ' + arg + '. Morale adjusted accordingly.', c: G }]; }
+      else out = [{ t: 'Unapproved wallpaper. Choose: sunset, corporate, workbench, paper.', c: R }];
+    } else if (verb === 'palette') {
+      for (var i = 0; i < 8; i++) out.push({ t: '████████████████  ' + HS_HEAT[i * 4] + '  ' + HS_CYCLE[i * 3], c: i % 2 ? HS_CYCLE[i * 3] : HS_HEAT[i * 4 + 3] });
+      out.push({ t: '256 colours approved. 248 remain unspent. Finance is concerned.', c: Y });
+    } else if (verb === 'uname') {
+      out = [{ t: 'HSOS hsos 2.0.36-corp #1 SMP PREEMPT_BOARD i486 Hiraeth/Systems', c: G }];
+    } else if (verb === 'whoami') {
+      out = [{ t: 'employee (uid=1000 gid=1000(assets) groups=1000(assets),27(sudo-pending))', c: G }];
+    } else if (verb === 'sudo' || verb === 'su') {
+      out = [{ t: 'employee is not in the sudoers file. This incident will be reported to the Board.', c: R }];
+    } else if (verb === 'reboot' || verb === 'shutdown') {
+      this.say([echo, { t: 'Broadcast message from board@hsos: the system is going down for mandatory reboot NOW.', c: Y }]);
+      this.reboot();
+      return;
+    } else if (verb === 'exit' || verb === 'logout' || verb === 'resign') {
+      out = [{ t: 'logout: not available on your plan.', c: R }];
+    } else if (verb === 'rm') {
+      out = [{ t: 'rm: refusing to remove anything. Redundancies are handled by HR.', c: R }];
+    } else if (verb === 'clear' || verb === 'cls') {
+      this.setState({ lines: [] });
+      return;
+    } else {
+      out = [{ t: verb + ': command not found. This incident has been logged.', c: R }];
+    }
+    this.say([echo].concat(out));
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var ids = ['welcome', 'products', 'oracle', 'listening', 'ledger', 'detail', 'settings', 'term'];
+    var ct = s.cycle ? s.tick : 0;
+    var w = {}, tasks = {};
+    ids.forEach(function (id) {
+      var p = s.pos[id];
+      w[id] = {
+        x: p.x, y: p.y, w: p.w, h: p.h, z: p.z, open: p.open,
+        focus: function () { self.focus(id); },
+        drag: function (e) { self.startDrag(id, e, 'move'); },
+        resize: function (e) { self.startDrag(id, e, 'resize'); },
+        close: function () { self.setWin(id, { open: false }); }
+      };
+      tasks[id] = function () { self.open(id); };
+    });
+    var memoFn = function (t) { return function () { self.setState({ memo: t, menu: null }); }; };
+    var I = function (label, run, key, dis) { return { item: true, sep: false, label: label, run: run, key: key || '', dis: !!dis }; };
+    var SEP = { item: false, sep: true };
+    var defs = [
+      { id: 'hsos', label: '◆ HSOS', items: [I('About HSOS', memoFn('HSOS 256, build 2026.11. Property of Hiraeth Systems. Licensed, never owned.')), SEP, I('Workplace Settings', tasks.settings, '/etc/hsos'), I('Reboot', function () { self.reboot(); }, 'Ctrl+Alt+Del'), I('Log Out', null, 'not on your plan', true)] },
+      { id: 'files', label: 'Files', items: [I('Home', tasks.welcome, '~/'), I('Divisions', tasks.products, '/srv/divisions'), I('Ledger', tasks.ledger, '/var/lib/ledger'), SEP, I('Mount /mnt/legacy', memoFn('/mnt/legacy is already mounted. It has always been mounted. It will always be mounted.')), I('Shred', null, 'needs 3 signatures', true)] },
+      { id: 'apps', label: 'Applications', items: [I('Terminal', tasks.term, 'tty0'), I('The Board', tasks.oracle, 'F7'), I('Listening Post 7', tasks.listening, '/dev/lp7'), I('Ledger', tasks.ledger), SEP, I('Settings', tasks.settings)] },
+      { id: 'divisions', label: 'Divisions', items: HS_PRODUCTS.map(function (p, i) { return I(p.name, function () { self.openProduct(i); }, p.div); }) },
+      { id: 'help', label: 'Help', items: [I('Employee Handbook', tasks.welcome, 'WELCOME.dd'), I('man hsos', memoFn('No manual entry for hsos. Please ask your line manager, who will ask theirs.')), SEP, I('Report a Bug', memoFn('Bugs are features awaiting budget approval. Thank you for your feedback.'))] }
+    ];
+    var menus = defs.map(function (m) {
+      var open = s.menu === m.id;
+      return {
+        label: m.label, open: open, items: m.items,
+        bg: open ? '#ffe066' : 'transparent', fg: open ? '#1a0a4a' : '#ffffff',
+        toggle: function () { self.setState({ menu: open ? null : m.id }); },
+        enter: function () { if (s.menu && s.menu !== m.id) self.setState({ menu: m.id }); }
+      };
+    });
+    var products = HS_PRODUCTS.map(function (p, i) { return Object.assign({}, p, { open: function () { self.openProduct(i); } }); });
+    var title = 'HIRAETH SYSTEMS'.split('').map(function (ch, i) { return { t: ch, c: HS_CYCLE[(i + ct) % HS_CYCLE.length] }; });
+    var blink = (s.tick % 40) < 2;
+    var iris = HS_CYCLE[(ct * 2) % HS_CYCLE.length];
+    var eye = [];
+    for (var y = 0; y < 9; y++) {
+      for (var x = 0; x < 14; x++) {
+        var nx = (x - 6.5) / 7, ny = (y - 4) / 4.5;
+        var inside = nx * nx + ny * ny <= 1 && Math.abs(ny) <= 1 - nx * nx * 0.55;
+        var c = 'transparent';
+        if (blink) { if (y === 4 && Math.abs(nx) <= 1) c = '#3a0a48'; }
+        else if (inside) {
+          var dx = x - 6.5, dy = y - 4, r = Math.sqrt(dx * dx + dy * dy);
+          c = r < 1.2 ? '#000000' : r < 2.8 ? iris : '#ffffff';
+          if ((nx * nx + ny * ny) > 0.62 && Math.abs(ny) > 0.55) c = '#ab3dbf';
+        }
+        eye.push(c);
+      }
+    }
+    var wp = { sunset: s.wall === 'sunset', tile: s.wall === 'tile', workbench: s.wall === 'workbench', paper: s.wall === 'paper' };
+    var wallpapers = HS_WALLS.map(function (o) {
+      return { name: o.name, thumb: o.thumb, ring: o.id === s.wall ? '#8f2aa3' : '#c8c8d8', pick: function () { self.setState({ wall: o.id }); } };
+    });
+    var shown = Math.min(s.bootIdx, HS_BOOT.length);
+    return {
+      w: w, tasks: tasks, menus: menus, menuOpen: !!s.menu,
+      closeMenus: function () { self.setState({ menu: null }); },
+      logo: HS_LOGO, title: title, eye: eye,
+      wp: wp, sky: HS_SKYCSS, sun: hsSun(Math.floor(ct / 3)),
+      gridC: s.cycle ? HS_GRIDR[Math.floor(ct / 3) % HS_GRIDR.length] : '#ff3ad1',
+      wallpapers: wallpapers, cycle: s.cycle, scan: s.scan,
+      toggleCycle: function () { self.setState({ cycle: !s.cycle }); },
+      toggleScan: function () { self.setState({ scan: !s.scan }); },
+      products: products, sel: HS_PRODUCTS[s.sel],
+      oracleText: s.oracleText, consult: function () { self.consult(); },
+      bars: s.bars, reforecast: function () { self.setState({ bars: hsBars() }); },
+      wf: s.wf, freq: s.freq,
+      memo: s.memo,
+      trash: function () { self.setState({ memo: 'Anything sent to /dev/null is reviewed by the Board within 0 working days.' }); },
+      closeMemo: function () { self.setState({ memo: '' }); },
+      booting: s.booting,
+      bootLines: HS_BOOT.slice(0, shown),
+      bootPct: Math.min(100, Math.round(shown / HS_BOOT.length * 100)),
+      skipBoot: function () { self.setState({ booting: false }); },
+      lines: s.lines, clock: s.clock, promptPath: hsPretty(s.cwd),
+      termInput: s.termInput,
+      onTermChange: function (e) { self.setState({ termInput: e.target.value }); },
+      onTermKey: function (e) {
+        if (e.key === 'Enter') { var v = s.termInput; self.setState({ termInput: '' }); self.run(v); }
+        else if (e.key === 'F7') { e.preventDefault(); self.say([{ t: self.consult(), c: '#ffe066' }]); }
+      },
+      onMove: function (e) { self.move(e); },
+      onUp: function () { if (s.drag) self.setState({ drag: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
