@@ -1,0 +1,40 @@
+---
+/**
+ * Placeholder home page for Phase 0. Phase 1 replaces this with the real home page, and
+ * Phase 2 boots the desktop on top of it.
+ */
+import { getCollection } from 'astro:content';
+import Document from '../layouts/Document.astro';
+import PaletteSwatch from '../os/PaletteSwatch';
+import { divisionName } from '../os/divisions';
+import { PALETTE_SIZE, UNSPENT_SLOTS } from '../os/palette';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Document title="HSOS" path="/">
+  <div class="prose">
+    <h2>HSOS 256 is being installed</h2>
+    <p>
+      This is the home of Hiraeth Systems, and of the projects filed under its Divisions. The
+      desktop is still being assembled. Please remain at your workstation.
+    </p>
+
+    <h2>Assets on file</h2>
+    <ul>
+      {
+        projects.map((p) => (
+          <li>
+            <strong>{p.data.name}</strong> ({divisionName(p.data.division)}): {p.data.summary}
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2>Colour budget</h2>
+    <p>
+      {`Finance approved ${PALETTE_SIZE} colours. ${PALETTE_SIZE - UNSPENT_SLOTS} have been allocated and ${UNSPENT_SLOTS} remain unspent. Finance is concerned.`}
+    </p>
+  </div>
+  <PaletteSwatch />
+</Document>

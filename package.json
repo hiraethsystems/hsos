@@ -1,0 +1,25 @@
+{
+  "name": "hsos",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "HSOS, the Hiraeth Systems Operating System. The website at hiraeth.systems.",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check && tsc --noEmit && node scripts/check-colours.mjs"
+  },
+  "dependencies": {
+    "@astrojs/preact": "6.1.2",
+    "astro": "^7.4.9",
+    "preact": "^11.2.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^6.0.3"
+  }
+}

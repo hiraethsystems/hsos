@@ -380,6 +380,8 @@ the Ledger, `workplace.conf` opens Settings, any `DOSSIER` opens that project's 
 - Prompt: `employee@hsos:<path>$`, with the home directory shown as `~`.
 - Output scrolls (newest at bottom), keeps the last 120 lines, coloured per line.
 - Command history with Up/Down arrows (new in build). Tab completion of paths (new in build).
+- Note: browsers use F7 for caret browsing. Test in Phase 5 whether it can be intercepted
+  while the terminal has focus; if not, document `board` as the main way in.
 - Commands are registered through a command registry so apps can add their own.
 
 v1 commands:

@@ -1,0 +1,49 @@
+---
+/**
+ * The static page layout, in HSOS document style. Every content page uses this, and every page
+ * must read properly with JavaScript turned off (CLAUDE.md rule 1).
+ */
+import { cssVariables, type TitleRampName } from '../os/palette';
+import '../styles/global.css';
+
+interface Props {
+  /** Page title for the browser tab and search results. */
+  title: string;
+  /** Filesystem path shown in the title bar, for example /srv/divisions/ */
+  path: string;
+  /** Title bar colour ramp, as for apps. */
+  ramp?: TitleRampName;
+  description?: string;
+}
+
+const { title, path, ramp = 'docs', description = 'HSOS, the operating system of Hiraeth Systems. All feelings reserved.' } = Astro.props;
+const fullTitle = title === 'HSOS' ? title : `${title} · HSOS`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const windowColours = `--win-bands: var(--bands-${ramp}); --win-dark: var(--ramp-${ramp}-0); --win-shadow: var(--c-shadow-${ramp});`;
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="preload" href="/fonts/vt323-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <style is:inline set:html={cssVariables()} />
+  </head>
+  <body class="doc">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="doc-bar">
+      <a href="/">◆ HIRAETH SYSTEMS</a>
+    </header>
+    <main id="main" class="doc-window" style={windowColours}>
+      <h1 class="doc-title">{path}</h1>
+      <div class="doc-body">
+        <slot />
+      </div>
+    </main>
+    <footer class="doc-footer">HSOS 256. All feelings reserved.</footer>
+  </body>
+</html>

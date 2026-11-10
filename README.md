@@ -89,6 +89,12 @@ upgrade before then.
 
 ---
 
+## Pinned dependencies
+
+- `@astrojs/preact` is pinned to exactly **6.1.2**. Version 6.1.3 (published 10 November 2026)
+  imports `@astrojs/internal-helpers/renderer`, which the helper version it depends on does not
+  contain, so the build fails to load the config. Try upgrading again once a fixed release is out.
+
 ## Repository map
 
 - `CLAUDE.md`: standing instructions Claude Code reads every session
@@ -97,5 +103,9 @@ upgrade before then.
 - `docs/CONTENT.md`: project descriptions to fill in
 - `docs/CREDITS.md`: licences for fonts and assets
 - `docs/reference/prototype.dc.html`: the design prototype (reference only)
+- `src/os/palette.ts`: the 256 colour palette, the only place colours are defined
+- `src/content/`: projects, memos and pages (Markdown)
+- `src/layouts/Document.astro`: the static page layout
+- `scripts/check-colours.mjs`: fails `npm run check` if a colour is used outside the palette
 - `deploy/nginx/`: server config for the VPS
 - `scripts/deploy.sh`: build and upload
