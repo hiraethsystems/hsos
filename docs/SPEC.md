@@ -465,8 +465,13 @@ own tilt over a 3D landscape of flat shaded tiles, with gravity, momentum and fu
   every pixel on screen against the palette.
 - The estate is 64 by 64 tiles and wraps round. **Every new game generates a new estate**
   from a random seed (owner's request): lowlands, hills and snow capped mountain ridges, the
-  sea, 3 to 5 lakes carved into the hills at their own levels, woods of trees on the grass,
-  and three 3 by 3 landing pads placed on dry, gentle ground well apart. A crash keeps the same
+  sea, lakes, woods of trees on the grass, and three 3 by 3 landing pads placed on dry, gentle
+  ground well apart. Water only lies where it really would (after the owner spotted lakes
+  hanging on hillsides): all ground below sea level is sea, and a lake fills a basin only up to
+  its lowest rim, where it would spill. A few hollows are pressed into level hilltops and
+  valley floors so most estates have hill lakes. Puddle sized basins stay dry dips, and basins
+  bigger than 140 vertices stay dry valleys, taken to be drained by rivers that are not drawn.
+  Pads never sit in or by water, and the water settles after the pads are laid. A crash keeps the same
   estate; "New estate" on the pause card makes another. Pads refuel the drone; landing
   anywhere else is allowed if it is gentle, level and on even ground. Water (sea or lake) is
   always a crash, and so is flying into a tree. A crash issues a replacement drone at Pad A.
