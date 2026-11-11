@@ -2,7 +2,7 @@
 name: DX Garden
 slug: dx-garden
 division: signals
-platform: PS Vita, Dreamcast (planned)
+platform: PS Vita, Windows, Linux
 status: in-development
 summary: An internet radio player for the PS Vita. Spin a globe and hear what is on air there.
 screenshot: /shots/dx-garden.png
