@@ -690,6 +690,13 @@ Acquisitions), DreamKartsU (Leisure Compliance), RBR-1 (Defence Contracts). The 
 were written from their GitHub READMEs with screenshots from their repositories. RBR-1 has
 no repository yet and stays a placeholder until the owner supplies it (`docs/CONTENT.md`).
 
+Added on 11 November 2026, also written from their GitHub READMEs: EtherLog, OWTR Viewer and
+DX Garden Stations (Signals), NetSplitElectron (Legacy Acquisitions), Bonsai and ByteNoise
+(Leisure Compliance), UnThreader (Defence Contracts) and Flare Enough (Morale). EtherLog, OWTR
+Viewer, DX Garden Stations and ByteNoise have no screenshot in their repositories yet. Other
+repositories on the owner's GitHub (Ionosonde, DX-Garden-Win, the vita-homebrew and
+wiiu-homebrew catalogues, and this site) were left off by the owner's choice.
+
 Extra screenshots may sit in a dossier's Markdown body as `<img>` tags with `width` and
 `height` set, so the space is reserved before they load and fitted windows do not jump.
 

@@ -34,6 +34,10 @@ project's dossier only.
 | `dx-garden.png`, `dx-garden-list.png`, `dx-garden-menu.png` | DX Garden `docs/screenshots/` | Hiraeth Systems | The owner's own work (GPL v3 project). Text in them is Noto, SIL OFL 1.1. The map is from Natural Earth, public domain |
 | `moon-child-vita.png` | `vita-homebrew` catalogue, `docs/screenshots/moon-child.png`, the game's title screen | Graphics by Metin Seven | CC BY-NC 4.0 (the Moon Child FE asset licence). Non-commercial use with credit, which the dossier gives |
 | `dreamkartsu.png` | DreamKartsU `port/wuhb/tv.png`, cropped | DreamKarts art by Rich Stokes | MIT (DreamKarts and DreamKartsU licence) |
+| `netsplitelectron.png` | NetSplitElectron `docs/screenshot.png` | Hiraeth Systems, port of Netsplit by Rich Stokes | MIT (NetSplitElectron licence). Shows the built in demo server |
+| `unthreader.png` | UnThreader `docs/screenshot.png`, scaled down | Hiraeth Systems | The owner's own work (MIT project). Shows the owner's own Threads account |
+| `bonsai.png` | Bonsai `docs/screenshot.png`, scaled down | Hiraeth Systems | The owner's own work (GPL v3 project) |
+| `flare-enough.png` | Flare Enough `fastlane/metadata/android/en-US/images/phoneScreenshots/01_today.jpg`, scaled down and saved as PNG | Hiraeth Systems | The owner's own work (GPL v3 or later project) |
 
 ## Inspiration
 

@@ -10,6 +10,8 @@ image came from in `docs/CREDITS.md`.
 
 The four projects with repositories were filled in on 11 November 2026 from their GitHub READMEs.
 Edit the dossier files directly from now on; this sheet is only for new projects.
+Eight more (EtherLog, OWTR Viewer, DX Garden Stations, NetSplitElectron, Bonsai, ByteNoise,
+UnThreader and Flare Enough) were added the same way on the same day, straight to dossier files.
 
 ---
 
