@@ -1,0 +1,129 @@
+/*
+ * Theme chrome (SPEC 4.9). Colours come from the theme's palette swap; these rules add the
+ * small era touches on top: bevels, borders, where the close button sits. Every theme keeps
+ * the same windows, menus and keyboard behaviour.
+ */
+
+/* ---- Bevelled windows: Workstation 95 and Plaza 1999 --------------------------------------- */
+
+:root[data-theme='win9x'] .hs-win,
+:root[data-theme='vaporwave'] .hs-win,
+:root[data-theme='win9x'] .hs-menu,
+:root[data-theme='vaporwave'] .hs-menu {
+  padding: 2px;
+  background: var(--c-win-face);
+  border: 2px solid;
+  border-color: var(--c-bevel-light) var(--c-bevel-dark) var(--c-bevel-dark) var(--c-bevel-light);
+}
+:root[data-theme='win9x'] .hs-win,
+:root[data-theme='win9x'] .hs-menu {
+  box-shadow: inset -1px -1px 0 var(--c-bevel-shade);
+}
+:root[data-theme='vaporwave'] .hs-win,
+:root[data-theme='vaporwave'] .hs-menu {
+  box-shadow:
+    inset -1px -1px 0 var(--c-bevel-shade),
+    5px 5px 0 var(--win-shadow, var(--c-shadow-docs));
+}
+:root[data-theme='win9x'] .hs-win-body,
+:root[data-theme='vaporwave'] .hs-win-body {
+  margin-top: 2px;
+  background: var(--c-paper);
+  border: 2px solid;
+  border-color: var(--c-bevel-shade) var(--c-bevel-light) var(--c-bevel-light) var(--c-bevel-shade);
+}
+:root[data-theme='win9x'] .hs-x,
+:root[data-theme='vaporwave'] .hs-x,
+:root[data-theme='win9x'] .hs-btn,
+:root[data-theme='vaporwave'] .hs-btn {
+  color: var(--c-button-text);
+  background: var(--c-win-face);
+  border: 2px solid;
+  border-color: var(--c-bevel-light) var(--c-bevel-dark) var(--c-bevel-dark) var(--c-bevel-light);
+}
+:root[data-theme='win9x'] .hs-x,
+:root[data-theme='vaporwave'] .hs-x {
+  margin: 2px 0;
+  line-height: 1;
+}
+:root[data-theme='win9x'] .hs-x:hover,
+:root[data-theme='win9x'] .hs-x:focus-visible,
+:root[data-theme='vaporwave'] .hs-x:hover,
+:root[data-theme='vaporwave'] .hs-x:focus-visible {
+  border-color: var(--c-bevel-dark) var(--c-bevel-light) var(--c-bevel-light) var(--c-bevel-dark);
+}
+:root[data-theme='win9x'] .hs-win:not(.is-active) .hs-tb {
+  background: var(--c-muted);
+}
+:root[data-theme='win9x'] .hs-menubar {
+  border-bottom: 2px solid var(--c-bevel-shade);
+  box-shadow: inset 0 -1px 0 var(--c-bevel-light);
+}
+
+/* ---- Home Office 64: the screen's thick border, and capitals in the chrome ----------------- */
+
+:root[data-theme='c64'] .hs-win {
+  border: 4px solid var(--c-win-face);
+  box-shadow: none;
+}
+:root[data-theme='c64'] .hs-tb,
+:root[data-theme='c64'] .hs-menubar,
+:root[data-theme='c64'] .hs-ico-label {
+  text-transform: uppercase;
+}
+
+/* ---- Archimedes: black outlines, a cream title bar for the window with focus --------------- */
+
+:root[data-theme='riscos'] .hs-win,
+:root[data-theme='riscos'] .hs-menu {
+  border: 2px solid var(--c-ink);
+  box-shadow: none;
+}
+:root[data-theme='riscos'] .hs-tb {
+  padding-left: 4px;
+  border-bottom: 2px solid var(--c-ink);
+}
+:root[data-theme='riscos'] .hs-win:not(.is-active) .hs-tb {
+  background: var(--c-win-face);
+}
+:root[data-theme='riscos'] .hs-menubar {
+  border-bottom-color: var(--c-ink);
+}
+
+/* ---- Workbench 1.3: white frames, the window with focus has the white title bar ------------ */
+
+:root[data-theme='amiga'] .hs-win,
+:root[data-theme='amiga'] .hs-menu {
+  border: 2px solid var(--c-bevel-light);
+  box-shadow: none;
+}
+:root[data-theme='amiga'] .hs-tb {
+  padding-left: 4px;
+}
+:root[data-theme='amiga'] .hs-win:not(.is-active) .hs-tb {
+  color: var(--c-ink);
+  background: var(--c-paper);
+  border-bottom: 2px solid var(--c-bevel-light);
+}
+:root[data-theme='amiga'] .hs-win:not(.is-active) .hs-x {
+  color: var(--c-ink);
+}
+
+/* Both put the close button at the top left, where those desktops kept it. */
+:root[data-theme='riscos'] .hs-x,
+:root[data-theme='amiga'] .hs-x {
+  order: -1;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  line-height: 1;
+}
+
+/* ---- Resort '84: racing stripes under every title bar --------------------------------------- */
+
+:root[data-theme='citypop'] .hs-tb {
+  padding-bottom: 6px;
+  box-shadow:
+    inset 0 -2px 0 var(--c-highlight),
+    inset 0 -4px 0 var(--c-shadow-docs),
+    inset 0 -6px 0 var(--c-link);
+}

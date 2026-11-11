@@ -39,6 +39,14 @@ project's dossier only.
 | `bonsai.png` | Bonsai `docs/screenshot.png`, scaled down | Hiraeth Systems | The owner's own work (GPL v3 project) |
 | `flare-enough.png` | Flare Enough `fastlane/metadata/android/en-US/images/phoneScreenshots/01_today.jpg`, scaled down and saved as PNG | Hiraeth Systems | The owner's own work (GPL v3 or later project) |
 
+## Themes and drawn wallpapers
+
+The eight themes and seven drawn wallpapers (SPEC 4.7, 4.9) are original work made for HSOS. No
+artwork, logo, icon or font from any of the systems or artists they are in the spirit of is used.
+The theme colours for Home Office 64, Archimedes and Workbench 1.3 follow those machines' widely
+published palette values, which are facts rather than artwork, lightened where needed so text
+stays readable. The wallpaper lettering is HSOS's own 5x7 font (`src/os/desktop/pixel.ts`).
+
 ## Inspiration
 
 TempleOS by Terry A. Davis (public domain).

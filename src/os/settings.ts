@@ -2,10 +2,15 @@
  * Settings store (SPEC 3.4). Lives in localStorage under `hsos.settings.v1`. Every read and
  * write is wrapped in try/catch: the site must work when storage is blocked, it just forgets.
  */
-export const WALLPAPERS = ['sunset', 'corporate', 'workbench', 'paper'] as const;
-export type WallpaperId = (typeof WALLPAPERS)[number];
+import { THEME_IDS, WALLPAPER_IDS, type ThemeId, type WallpaperId } from './palette';
+
+export const WALLPAPERS: readonly WallpaperId[] = WALLPAPER_IDS;
+export const THEMES: readonly ThemeId[] = THEME_IDS;
+export type { ThemeId, WallpaperId };
 
 export interface Settings {
+  /** The colour theme, a palette swap (SPEC 4.9). */
+  theme: ThemeId;
   wallpaper: WallpaperId;
   /** Colour cycling (palette animation). Always off under prefers-reduced-motion. */
   cycle: boolean;
@@ -17,6 +22,7 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
+  theme: 'hsos',
   wallpaper: 'sunset',
   cycle: true,
   scanlines: false,
@@ -32,6 +38,7 @@ export function loadSettings(): Settings {
     if (!raw) return { ...DEFAULT_SETTINGS };
     const s = JSON.parse(raw) as Partial<Record<keyof Settings, unknown>>;
     return {
+      theme: (THEMES as readonly unknown[]).includes(s.theme) ? (s.theme as ThemeId) : DEFAULT_SETTINGS.theme,
       wallpaper: (WALLPAPERS as readonly unknown[]).includes(s.wallpaper) ? (s.wallpaper as WallpaperId) : DEFAULT_SETTINGS.wallpaper,
       cycle: typeof s.cycle === 'boolean' ? s.cycle : DEFAULT_SETTINGS.cycle,
       scanlines: typeof s.scanlines === 'boolean' ? s.scanlines : DEFAULT_SETTINGS.scanlines,

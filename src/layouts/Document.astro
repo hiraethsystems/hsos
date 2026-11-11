@@ -10,6 +10,7 @@ import Shell from '../os/Shell';
 import { getMemos, getProjects } from '../site/content';
 import '../styles/global.css';
 import '../styles/shell.css';
+import '../styles/themes.css';
 
 type Section = 'home' | 'welcome' | 'divisions' | 'memos';
 
@@ -75,8 +76,14 @@ const nav: { section: Section; href: string; label: string }[] = [
         try {
           if (window.sessionStorage.getItem('hsos.plain') !== '1') {
             root.classList.add('hsos-shell');
+            // Load the visitor's theme now too, so the desktop does not flash the house colours.
+            var theme = (JSON.parse(window.localStorage.getItem('hsos.settings.v1') || '{}') || {}).theme;
+            if (typeof theme === 'string' && /^[a-z0-9]+$/.test(theme) && theme !== 'hsos') root.dataset.theme = theme;
             window.setTimeout(function () {
-              if (!root.classList.contains('hsos-shell-ready')) root.classList.remove('hsos-shell');
+              if (!root.classList.contains('hsos-shell-ready')) {
+                root.classList.remove('hsos-shell');
+                delete root.dataset.theme;
+              }
             }, 4000);
           }
         } catch (e) {}

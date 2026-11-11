@@ -148,6 +148,9 @@ Use Linux paths as URLs where sensible, they reinforce the joke and stay readabl
 ### 4.1 Palette (256 colours)
 
 - Implement a real indexed palette in `src/os/palette.ts`: an array of exactly 256 hex colours.
+  **Decided 11 November 2026:** each theme is its own 256 colour palette (a palette swap, see
+  4.9), and each wallpaper loads its own colours into the slots the system leaves free. Any
+  theme with any wallpaper must still come to 256 or fewer; the build fails otherwise.
 - Slots 0 to 15: the classic 16 colour set (used by the legacy terminal and text mode).
 - Remaining slots: named ramps used across the UI, generated once at build time by stepping
   between key colours. Ramps used in the prototype:
@@ -238,12 +241,63 @@ dark bottom-right border), lilac checkered track, bevelled arrow buttons. Use
 
 ### 4.7 Wallpapers
 
-Four built in, chosen in Settings:
+Eleven built in, chosen in Settings. Each owns its colours (`--wp-<id>-...` in CSS), so it looks
+the same under every theme.
 
 1. **Sunset** (default): 12 band sky, sliced sun, mountain silhouette, neon grid floor.
 2. **Corporate**: purple checkerboard with small gold dots, conference carpet energy.
 3. **Workbench**: stepped blue bands.
 4. **DolDoc Paper**: pale lilac page with a faint dot grid (the TempleOS look).
+
+Added 11 November 2026, one per new theme. These are drawn pictures, not CSS: indexed pixel art
+200 pixels tall, as wide as the screen's shape needs, drawn by code in `src/os/desktop/drawn.ts`
+and scaled up crisply. Colour cycling rotates the ramps each one names. All are original scenes
+made for HSOS, in the spirit of an era or genre; none copies a real wallpaper, logo or album
+cover.
+
+5. **Teal Horizon** (Workstation 95): the company sunset as a dithered sixteen colour picture,
+   teal sky, hills and grid.
+6. **READY.** (Home Office 64): a blue screen inside a striped loading border, a banner ("256
+   COLOURS APPROVED. 0 FEELINGS FREE"), a blinking cursor and a raster sunset. The lettering is
+   HSOS's own 5x7 font, not a machine's character ROM.
+7. **Pinboard** (Archimedes): textured grey backdrop with the sunset pinned up in a frame.
+8. **Copper** (Workbench 1.3): copper bars across a blue screen over a checkered floor.
+9. **Plaza** (Plaza 1999): marble bust before a sliced sun, two columns, a leaping dolphin, a
+   palm and a neon grid.
+10. **Closing Time** (Late Appointment): a barber's at dusk in a pastel city, crescent moon,
+    lit windows, neon sign, a turning barber's pole.
+11. **Poolside** (Resort '84): blue sky, flat white clouds, a white villa, palms and a rippling
+    pool.
+
+### 4.9 Themes (decided 11 November 2026)
+
+A theme is a palette swap: it keeps the palette's slot layout and gives the slots new values,
+then adds small era touches to the chrome (`src/styles/themes.css`): bevels, borders, where the
+close button sits. Windows, menus, fonts and keyboard behaviour are the same in every theme.
+Choosing a theme also loads its wallpaper; afterwards any wallpaper can be worn with any theme.
+The theme is a desktop setting: static pages and Plain View always use the house theme.
+
+| Id | Name | After | Wallpaper | Chrome touches |
+|---|---|---|---|---|
+| `hsos` | HSOS 256 | the house style | Sunset | none |
+| `win9x` | Workstation 95 | Windows 95 and 98 | Teal Horizon | grey bevelled windows, sunken page, navy title bars, grey menu bar |
+| `c64` | Home Office 64 | the Commodore 64 | READY. | blue pages, thick light blue frame, capitals in the chrome |
+| `riscos` | Archimedes | RISC OS 3 on the Acorn Archimedes | Pinboard | black outlines, cream title bar for the window with focus, close at top left |
+| `amiga` | Workbench 1.3 | Workbench on the Amiga | Copper | blue pages, white frames, white title bar for the window with focus, close at top left |
+| `vaporwave` | Plaza 1999 | vaporwave | Plaza | pastel bevels with pink shadows |
+| `barber` | Late Appointment | Barber Beats album art | Closing Time | dusky purple title bars, lavender shadows |
+| `citypop` | Resort '84 | Japanese city pop artwork of the 1980s | Poolside | racing stripes under title bars |
+
+- Names are in-house names, not the products' own. "After" lines in Settings say what each is
+  in the spirit of.
+- Every theme keeps the contrast rules: title, menu and button text reach 4.5:1 on every band,
+  body text 7:1 on its page, links and muted text 4.5:1.
+- Home Office 64 and Workbench 1.3 have dark blue pages with light text, as those machines did.
+  Their text is lightened from the real machines' colours so it stays comfortable to read.
+- The chosen theme is applied in the page head before the desktop starts, so there is no flash
+  of the house colours.
+- Themes and wallpapers add about 22 KB of custom properties to each page's inline style block (the whole block is about 6 KB
+  compressed). If that grows, move the theme blocks to their own stylesheet.
 
 ### 4.8 CRT scanlines
 
@@ -424,7 +478,8 @@ v1 commands:
 | `cat FILE` | Print a file, or open the matching app (see section 9) |
 | `open X` | Open an app or a project by name/slug |
 | `board` / F7 | Print a Board directive and update the Board window |
-| `wall X` | Set wallpaper: sunset, corporate, workbench, paper |
+| `wall X` | Set wallpaper: sunset, corporate, workbench, paper, teal, ready, pinboard, copper, plaza, salon, poolside |
+| `theme X` | Set theme (and its wallpaper): hsos, win9x, c64, riscos, amiga, vaporwave, barber, citypop |
 | `palette` | Print colour bars, the real count of unspent slots, and Finance's concern |
 | `uname -a` | `HSOS hsos 2.0.36-corp #1 SMP PREEMPT_BOARD i486 Hiraeth/Systems` |
 | `whoami` | `employee (uid=1000 gid=1000(assets) groups=1000(assets),27(sudo-pending))` |
@@ -469,7 +524,7 @@ All behaviours below exist in the prototype unless marked (new).
    7.074.000 kHz LSB. Only animates while the window is open. Later: optional live data.
 6. **Ledger** (`/var/lib/ledger/morale.csv`): stepped colour bar chart "Morale by Quarter",
    Q1 to Q7 and Q∞, Reforecast randomises it.
-7. **Settings** (`/etc/hsos/workplace.conf`): wallpaper picker with thumbnails, colour cycling
+7. **Settings** (`/etc/hsos/workplace.conf`): theme picker with swatches (4.9), wallpaper picker with thumbnails, colour cycling
    toggle, CRT scanline toggle, (new) "full boot every visit" toggle. Saved to localStorage.
 8. **Terminal**: section 10.
 9. **HR memo dialog**: small modal used for jokes and system messages, single Acknowledge button.

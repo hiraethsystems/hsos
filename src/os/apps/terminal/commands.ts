@@ -2,7 +2,7 @@
  * The terminal's core commands (SPEC 10). Apps add their own (`board`, `wall`) through their
  * manifests; `help` lists them all. Wording follows the prototype where it had any.
  */
-import { rampStep, UNSPENT_SLOTS } from '../../palette';
+import { rampStep, unspentFor } from '../../palette';
 import { HOME_DIR } from '../../routes';
 import type { CommandContext, TerminalCommand } from '../../terminal/types';
 import { listingName, type VfsFile } from '../../vfs/vfs';
@@ -135,12 +135,13 @@ export function coreCommands(all: () => readonly TerminalCommand[]): TerminalCom
       summary: 'audit the colour budget',
       completes: 'nothing',
       run: (ctx) => {
+        const unspent = unspentFor(ctx.settings.theme, ctx.settings.wallpaper);
         for (let i = 0; i < 8; i++) {
           const [name, step] = i % 2 ? (['cycle', i * 3] as const) : (['heat', i * 4 + 3] as const);
           ctx.print({ text: `${name}.${step}  ${rampStep(name, step)}`, swatch: `var(--ramp-${name}-${step})` });
         }
         ctx.print({
-          text: `256 colours approved. ${UNSPENT_SLOTS} remain unspent. Finance is ${UNSPENT_SLOTS > 32 ? 'concerned' : 'delighted, and also concerned'}.`,
+          text: `256 colours approved. ${unspent} remain unspent. Finance is ${unspent > 32 ? 'concerned' : 'delighted, and also concerned'}.`,
           tone: 'notice',
         });
       },

@@ -224,6 +224,16 @@ function Desktop({ projects, memos }: Props) {
       saveSettings(next);
       return next;
     });
+  // The theme is a palette swap for the whole page (SPEC 4.9), so it lives on <html>. Plain
+  // view and the static pages always use the house theme.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (settings.theme === 'hsos') delete root.dataset.theme;
+    else root.dataset.theme = settings.theme;
+    return () => {
+      delete root.dataset.theme;
+    };
+  }, [settings.theme]);
   const clock = useMemo<AnimationClock>(
     () => ({ motion: !reducedMotion, cycling: !reducedMotion && settings.cycle }),
     [reducedMotion, settings.cycle],
