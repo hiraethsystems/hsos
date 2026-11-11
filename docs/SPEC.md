@@ -501,7 +501,7 @@ All behaviours below exist in the prototype unless marked (new).
 
 1. **WELCOME.dd** (`/home/employee/WELCOME.dd`): the handbook. Logo sprite, colour cycling
    "HIRAETH SYSTEMS" title, hyperlinked text where underlined words open apps, sections:
-   Today's directives, Filesystem orientation, Your rights (intentionally left blank).
+   Getting started, Filesystem orientation, Your rights (under review by Legal).
    Content comes from `src/content/pages/welcome.md`; links in it use a custom syntax to open
    apps (for example `[Listening Post](hsos:open/listening)`).
    Default size: 660px wide, height fitted to the content (section 5). On the owner's monitor
@@ -723,8 +723,8 @@ scrolling and focus. This is what keeps every future app looking like part of on
     visitor chooses Reboot.
   - Turning a tablet, or resizing a browser, switches between Handheld and the desktop live.
     Windows keep their desktop positions for when there is room again.
-  - Known gap: the WELCOME.dd copy talks about dragging and resizing windows, which Handheld
-    does not do. The owner may want to reword it to suit both.
+  - The WELCOME.dd copy is worded to suit both Handheld and the desktop (no mention of
+    dragging or resizing windows).
 
 ## 13. Content model
 
@@ -790,7 +790,10 @@ DISRUPT mist offboard ETERNAL headcount moth DELIVERABLE harbour optimise silenc
 reception onboarding ghost VERTICAL sea runway dusk.
 Capitalisation is part of the effect: mixed upper and lower case words.
 
-**Welcome copy**: see `docs/reference/prototype.dc.html`, Welcome window, and reuse it.
+**Welcome copy**: lives in `src/content/pages/welcome.md` and no longer follows the prototype.
+Rewritten in November 2026 to be flatter and more procedural: plain manual language with the
+odd dry line, rather than a punchline on every line. Masthead tagline: "Workplace Operating
+Environment. Authorised personnel only."
 
 **Bilingual (later)**: Cymraeg and English toggle. Any Welsh must be checked by a fluent
 speaker before going live.
