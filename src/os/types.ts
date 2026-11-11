@@ -47,6 +47,8 @@ export interface WindowChrome {
   ramp: TitleRampName;
 }
 
+export type FitMode = 'height' | 'both';
+
 export interface HsosApp {
   id: string;
   title: string;
@@ -56,6 +58,11 @@ export interface HsosApp {
   /** Preferred size; the window manager places it and keeps it on screen. */
   defaultSize: (args: AppArgs) => { w: number; h: number };
   minSize?: { w: number; h: number };
+  /**
+   * Fit the window's first size to its content (SPEC 5): 'height' keeps the default width,
+   * 'both' also widens it until every `data-fit-line` element fits on one line.
+   */
+  fitContent?: (args: AppArgs) => FitMode | undefined;
   /** Default true: opening again focuses the existing window. Keyed by `windowKey`. */
   singleton?: boolean;
   /** For apps with many windows (the page viewer), what makes two windows "the same". */

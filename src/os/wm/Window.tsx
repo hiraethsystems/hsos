@@ -3,8 +3,8 @@
  */
 import type { ComponentChildren, TargetedKeyboardEvent, TargetedPointerEvent } from 'preact';
 import { useEffect, useId, useRef } from 'preact/hooks';
-import type { Rect, WindowChrome } from '../types';
-import { clampRect, type Bounds } from './geometry';
+import type { FitMode, Rect, WindowChrome } from '../types';
+import { clampRect, fitCap, type Bounds } from './geometry';
 
 /** Pixels per arrow key press when moving or resizing from the keyboard. */
 const KEY_STEP = 20;
@@ -24,6 +24,8 @@ interface Props {
   active: boolean;
   bounds: Bounds;
   minSize?: { w: number; h: number };
+  /** Size the window to its content until the visitor resizes it (SPEC 5). */
+  fit?: FitMode;
   /** Move keyboard focus into the window when it first appears. */
   focusOnMount?: boolean;
   onFocus: () => void;
@@ -34,10 +36,65 @@ interface Props {
 
 type Drag = { mode: 'move' | 'resize'; px: number; py: number; start: Rect; id: number };
 
-export function Window({ winId, rect, fixed = false, hidden = false, z, chrome, active, bounds, minSize, focusOnMount, onFocus, onClose, onRect, children }: Props) {
+export function Window({ winId, rect, fixed = false, hidden = false, z, chrome, active, bounds, minSize, fit, focusOnMount, onFocus, onClose, onRect, children }: Props) {
   const titleId = useId();
   const ref = useRef<HTMLElement>(null);
+  const body = useRef<HTMLDivElement>(null);
   const drag = useRef<Drag | null>(null);
+  // Still fitting the content: true until the visitor resizes the window by hand.
+  const fitting = useRef(Boolean(fit));
+  // The effect below outlives renders, so it reads the latest values from here.
+  const latest = useRef({ rect, bounds, minSize, onRect });
+  latest.current = { rect, bounds, minSize, onRect };
+
+  // Fit the size to the content, again whenever the content changes size (a fetched page
+  // arriving, an image loading), until the visitor takes over.
+  useEffect(() => {
+    const el = body.current;
+    if (!fit || fixed || !el) return;
+    const refit = () => {
+      if (!fitting.current) return;
+      const { rect: r, bounds: b, minSize: min, onRect: set } = latest.current;
+      const cap = fitCap(r, b);
+      let w = r.w;
+      if (fit === 'both') {
+        // How much wider each marked line wants to be than it is now, at its natural width.
+        let extra = -Infinity;
+        el.querySelectorAll<HTMLElement>('[data-fit-line]').forEach((line) => {
+          // Fractional widths, plus a pixel of slack, so rounding never pushes a word over.
+          const now = line.getBoundingClientRect().width;
+          line.style.width = 'max-content';
+          extra = Math.max(extra, Math.ceil(line.getBoundingClientRect().width - now) + 1);
+          line.style.width = '';
+        });
+        if (extra > -Infinity) w = Math.ceil(r.w + extra);
+      }
+      // Measure the content's full height by letting the body collapse for a moment.
+      const before = el.clientHeight;
+      el.style.flex = 'none';
+      el.style.height = '0px';
+      const needed = el.scrollHeight;
+      el.style.flex = '';
+      el.style.height = '';
+      const h = r.h - before + needed;
+      const next = clampRect({ ...r, w: Math.min(w, cap.w), h: Math.min(h, cap.h) }, b, min);
+      if (next.w !== r.w || next.h !== r.h) set(next);
+    };
+    refit();
+    const ro = new ResizeObserver(refit);
+    for (const child of Array.from(el.children)) ro.observe(child);
+    // Pages arrive later and replace the children, so watch for that too.
+    const mo = new MutationObserver(() => {
+      ro.disconnect();
+      for (const child of Array.from(el.children)) ro.observe(child);
+      refit();
+    });
+    mo.observe(el, { childList: true, subtree: true });
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+    };
+  }, [fit, fixed]);
 
   useEffect(() => {
     if (focusOnMount) ref.current?.focus({ preventScroll: true });
@@ -48,6 +105,7 @@ export function Window({ winId, rect, fixed = false, hidden = false, z, chrome, 
     e.preventDefault();
     onFocus();
     e.currentTarget.setPointerCapture(e.pointerId);
+    if (mode === 'resize') fitting.current = false;
     drag.current = { mode, px: e.clientX, py: e.clientY, start: rect, id: e.pointerId };
   };
   const move = (e: TargetedPointerEvent<HTMLElement>) => {
@@ -73,6 +131,7 @@ export function Window({ winId, rect, fixed = false, hidden = false, z, chrome, 
     if (!d) return;
     e.preventDefault();
     const [dx, dy] = [d[0]! * KEY_STEP, d[1]! * KEY_STEP];
+    if (e.shiftKey) fitting.current = false;
     const next = e.shiftKey ? { ...rect, w: rect.w + dx, h: rect.h + dy } : { ...rect, x: rect.x + dx, y: rect.y + dy };
     onRect(clampRect(next, bounds, minSize));
   };
@@ -110,7 +169,9 @@ export function Window({ winId, rect, fixed = false, hidden = false, z, chrome, 
           [X]
         </button>
       </div>
-      <div class="hs-win-body hs-scroll">{children}</div>
+      <div ref={body} class="hs-win-body hs-scroll">
+        {children}
+      </div>
       {!fixed && <div class="hs-grip" aria-hidden="true" onPointerDown={begin('resize')} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
     </section>
   );

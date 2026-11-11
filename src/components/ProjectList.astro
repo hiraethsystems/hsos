@@ -23,7 +23,7 @@ const { projects, showDivision = true } = Astro.props;
             {STATUS_LABELS[p.data.status]}
           </span>
         </a>
-        <p class="asset-summary">
+        <p class="asset-summary" data-fit-line>
           <strong>{p.data.name}</strong>: {p.data.summary}
         </p>
       </li>

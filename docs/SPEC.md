@@ -248,6 +248,18 @@ Optional full screen overlay of faint horizontal lines. Off by default. Never fl
 - Drag by title bar, using pointer events. Clamp so a window can never be lost off screen
   (title bar always reachable).
 - Resize from a grip in the bottom right corner. Minimum size 240x140.
+- **Initial size fits the content** (owner's request, so visitors are not made to scroll
+  straight away). Document windows (the page viewer: WELCOME.dd, Divisions, dossiers, memos)
+  open at their app's default width, and once their page has loaded the height is set so the
+  content fits with no scrollbar. An app can also ask for its width to fit: then the window
+  widens until every line marked `data-fit-line` in the page sits on a single line.
+- That fitted size is **capped to the visible desktop**: 16px clear of the menu bar, of the
+  desktop icon column on the right, and of the bottom of the screen, measured from where the
+  window was placed. Content bigger than the cap scrolls (section 4.4).
+- Fitting follows the content while it loads (fetched pages, images arriving) and stops for
+  good the moment the visitor resizes that window by hand, by the grip or the keyboard. Moving
+  a window does not stop it. Apps with their own layouts (Terminal, Board, Ledger and so on)
+  keep their fixed default sizes, and Handheld windows are always full screen.
 - Content areas scroll automatically when content is larger than the window (section 4.4).
 - Singleton apps (most of them) re-focus their existing window instead of opening another.
 - Keyboard: windows are focusable; Escape closes the focused dialog; future shortcut to cycle
@@ -427,8 +439,14 @@ All behaviours below exist in the prototype unless marked (new).
    Today's directives, Filesystem orientation, Your rights (intentionally left blank).
    Content comes from `src/content/pages/welcome.md`; links in it use a custom syntax to open
    apps (for example `[Listening Post](hsos:open/listening)`).
+   Default size: 660px wide, height fitted to the content (section 5). On the owner's monitor
+   that is about 28% of the screen width and 85% of the desktop height.
 2. **Divisions** (`/srv/divisions/`): list of projects with small icons, slug and division.
-   Clicking opens the dossier.
+   Clicking opens the dossier. Default size: width and height fitted to the content, so each
+   project's one-line summary fits on one line (about 33% wide and 70% tall on the owner's
+   monitor). On the home page it opens 16px to the right of WELCOME.dd, side by side and never
+   overlapping, capped so it stops 16px short of the icons; if the screen is too narrow for
+   both, it cascades over the handbook as before.
 3. **Dossier** (`/srv/divisions/<division>/<slug>/DOSSIER`): screenshot panel, name, division,
    platform, status, description, links (new: repo and download links).
 4. **The Board** (`/opt/board/boardd`): eye sprite, a six word directive drawn from the word
@@ -517,6 +535,7 @@ export interface HsosApp {
   icon?: Sprite;                 // desktop / menu icon
   defaultRect: { x: number; y: number; w: number; h: number };
   minSize?: { w: number; h: number };
+  fitContent?: (args) => 'height' | 'both' | undefined; // fit the first size to the content (section 5)
   singleton?: boolean;           // default true
   menu?: { menu: 'files' | 'apps' | 'help'; label: string; key?: string }[];
   commands?: TerminalCommand[];  // terminal commands this app adds

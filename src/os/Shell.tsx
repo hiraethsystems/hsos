@@ -18,7 +18,7 @@ import type { DivisionId } from './divisions';
 import { describeUrl, url as urls, vfsPath } from './routes';
 import { loadSettings, plainViewChosen, saveSettings, setPlainView, type Settings } from './settings';
 import type { AppArgs, Rect } from './types';
-import { clampRect, ICONS_W, MENU_H, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
+import { clampRect, FIT_GAP, ICONS_W, MENU_H, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
 import { Window, WINDOW_HELP_ID } from './wm/Window';
 import { BASE_MOUNTS } from './vfs/base';
 import { Vfs } from './vfs/vfs';
@@ -140,6 +140,8 @@ function chooseBoot(s: Settings, handheld: boolean): BootMode {
   if (handheld) return 'short'; // SPEC 14: Handheld plays the short boot
   return !s.seenBoot && window.location.pathname === '/' ? 'full' : 'short';
 }
+/** Narrowest the Divisions window may be to sit beside the handbook rather than over it. */
+const SIDE_BY_SIDE_MIN = 360;
 const windowKey = (appId: string, args: AppArgs) => `${appId}:${APPS[appId]?.windowKey?.(args) ?? ''}`;
 
 /** The windows open when the desktop first appears. */
@@ -157,9 +159,14 @@ function initialWindows(bounds: Bounds, handheld: boolean): WmState {
     const divisions = page(urls.divisions);
     const ws = size(welcome);
     const ds = size(divisions);
+    // Side by side, FIT_GAP apart and clear of the menu bar; both then fit their content
+    // (SPEC 5), the divisions capped so they stop short of the icons and never overlap.
+    const top = MENU_H + FIT_GAP;
+    const beside = FIT_GAP + ws.w + FIT_GAP;
+    const room = bounds.w - ICONS_W - FIT_GAP - beside;
     // Handheld shows one app at a time, so only the handbook.
-    if (!handheld) add(divisions, bounds.w - ICONS_W >= 20 + ws.w + 20 + ds.w ? { x: 20 + ws.w + 20, y: 44, ...ds } : { x: 70, y: 90, ...ds });
-    add(welcome, { x: 20, y: 44, ...ws });
+    if (!handheld) add(divisions, room >= SIDE_BY_SIDE_MIN ? { x: beside, y: top, ...ds, w: Math.min(ds.w, room) } : { x: 70, y: 90, ...ds });
+    add(welcome, { x: FIT_GAP, y: top, ...ws });
     if (!here) {
       // Not a page we know (the 404 page): show it on top, as it is what was asked for.
       const lost = page(window.location.pathname);
@@ -359,6 +366,7 @@ function Desktop({ projects, memos }: Props) {
               active={w.key === activeKey}
               bounds={bounds}
               minSize={app.minSize}
+              fit={app.fitContent?.(w.args)}
               focusOnMount={w.focusOnMount}
               onFocus={() => dispatch({ type: 'focus', key: w.key })}
               onClose={() => close(w.key)}

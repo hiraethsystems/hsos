@@ -14,6 +14,23 @@ try {
   check('static page hidden behind desktop', await b.eval(`getComputedStyle(document.querySelector('main.doc-window')).display === 'none'`));
   check('URL stays / on load', (await b.eval('location.pathname')) === '/');
 
+  // SPEC 5: first sizes fit the content, capped 16px clear of the menu bar, icons and bottom.
+  await b.wait(800);
+  w = await wins();
+  const fw = find(w, 'WELCOME');
+  const fd = find(w, 'divisions');
+  check('Welcome and Divisions sit side by side without overlapping', fw.x + fw.w + 16 <= fd.x + 1, `${fw.x}+${fw.w} vs ${fd.x}`);
+  check('first windows sit 16px below the menu bar', fw.y === 48 && fd.y === 48, `${fw.y}, ${fd.y}`);
+  check('Divisions stops 16px short of the icons', fd.x + fd.w <= 1440 - 100 - 16, `${fd.x + fd.w}`);
+  check('first windows stop 16px above the bottom', fw.y + fw.h <= 900 - 16 && fd.y + fd.h <= 900 - 16, `${fw.y + fw.h}, ${fd.y + fd.h}`);
+  check('Welcome keeps its width', fw.w === 660, `${fw.w}`);
+  const hideDivisions = (on) => b.eval(`[...document.querySelectorAll('.hs-win')].find(w => w.querySelector('.hs-tb-title').textContent.includes('divisions')).querySelectorAll('.doc-section').forEach((e, i) => { if (i) e.style.display = ${on ? "'none'" : "''"}; })`);
+  await hideDivisions(true); await b.wait(300);
+  const shrunk = find(await wins(), 'divisions');
+  check('a fitted window follows its content', shrunk.h < fd.h - 100, `${fd.h} -> ${shrunk.h}`);
+  await hideDivisions(false); await b.wait(300);
+  check('and grows back when the content does', find(await wins(), 'divisions').h === fd.h, `${find(await wins(), 'divisions').h}`);
+
   const wel = find(w, 'WELCOME');
   await b.drag(wel.x + 150, wel.y + 12, wel.x + 350, wel.y + 112); await b.wait(150);
   let w2 = find(await wins(), 'WELCOME');
@@ -32,6 +49,10 @@ try {
   await b.drag(w4.x + w4.w - 6, w4.y + w4.h - 6, w4.x + 700, w4.y + 500); await b.wait(150);
   const w5 = find(await wins(), 'WELCOME');
   check('resize grows window', w5.w > 600 && w5.h > 400, `${w5.w}x${w5.h}`);
+  await b.eval(`[...document.querySelectorAll('.hs-win')].find(w => w.querySelector('.hs-tb-title').textContent.includes('WELCOME')).querySelector('.hs-page').append(Object.assign(document.createElement('div'), { id: 'fit-probe', style: 'height: 2000px' }))`); await b.wait(300);
+  const w6 = find(await wins(), 'WELCOME');
+  check('a window resized by hand is left alone when its content changes', w6.w === w5.w && w6.h === w5.h, `${w5.w}x${w5.h} -> ${w6.w}x${w6.h}`);
+  await b.eval(`document.getElementById('fit-probe').remove()`);
 
   const dv = find(await wins(), 'divisions');
   await b.click(dv.x + dv.w - 30, dv.y + dv.h - 40); await b.wait(150);

@@ -31,6 +31,8 @@ export const pageApp: HsosApp = {
     return { path: info?.path ?? args.url ?? '/', ramp: info ? RAMP[info.kind] : 'docs' };
   },
   defaultSize: (args) => SIZE[describeUrl(args.url ?? '/')?.kind ?? 'home'] ?? { w: 600, h: 440 },
+  // Documents open sized to their content; Divisions also widens so each summary is one line.
+  fitContent: (args) => (describeUrl(args.url ?? '/')?.kind === 'divisions' ? 'both' : 'height'),
   singleton: true,
   windowKey: (args) => args.url ?? '/',
   component: PageView,

@@ -6,6 +6,8 @@ export const MENU_H = 32;
 /** Width reserved for the desktop icons down the right edge. */
 export const ICONS_W = 100;
 export const MIN_SIZE = { w: 240, h: 140 } as const;
+/** The clear margin a window's fitted first size keeps from the menu bar, icons and bottom. */
+export const FIT_GAP = 16;
 /** How much of a window must stay on screen, so its title bar can always be grabbed. */
 const GRAB = 80;
 const TITLE_H = 26;
@@ -26,6 +28,14 @@ export function clampRect(r: Rect, b: Bounds, min: { w: number; h: number } = MI
     x: clamp(r.x, GRAB - w, b.w - GRAB),
     y: clamp(r.y, MENU_H, b.h - TITLE_H),
   };
+}
+
+/**
+ * The most a window at `r` may grow to when fitting its content (SPEC 5): it stops FIT_GAP
+ * short of the desktop icons on the right and of the bottom of the screen.
+ */
+export function fitCap(r: Rect, b: Bounds): { w: number; h: number } {
+  return { w: Math.max(MIN_SIZE.w, b.w - ICONS_W - FIT_GAP - r.x), h: Math.max(MIN_SIZE.h, b.h - FIT_GAP - r.y) };
 }
 
 /** Where a new window goes: cascaded from the top left, clear of the icons where possible. */
