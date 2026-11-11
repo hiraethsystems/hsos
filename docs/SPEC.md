@@ -442,6 +442,37 @@ All behaviours below exist in the prototype unless marked (new).
    toggle, CRT scanline toggle, (new) "full boot every visit" toggle. Saved to localStorage.
 8. **Terminal**: section 10.
 9. **HR memo dialog**: small modal used for jokes and system messages, single Acknowledge button.
+10. (new, after v1) **Estate Survey** (working title, `/usr/games/survey`): see 11.1 below.
+
+### 11.1 Estate Survey (decided 1.1, first version built 11 November 2026)
+
+The owner asked for a game in the style of Lander and Zarch on the Acorn Archimedes. It is an
+**original** HSOS game in that genre, not a recreation: no names, ship, levels, enemies or
+look are taken from those games. What it shares is the genre: a craft that thrusts along its
+own tilt over a 3D landscape of flat shaded tiles, with gravity, momentum and fuel.
+
+- First version is **free flight only** (owner's choice): fly, land, refuel, crash. The goal
+  of the game is decided once the owner has tried it. Ideas so far: containing red tape that
+  spreads across the estate, or deliveries between pads.
+- **Controls** (owner's choice): the mouse tilts (further from the middle tilts harder) and the
+  button thrusts; arrow keys tilt and Space thrusts; Escape pauses. On touch screens, drag on
+  the view to tilt and hold the Thrust button.
+- **Colours** (owner's choice): only ramps HSOS already has, no new palette slots. Grass is the
+  Divisions greens running into the Ledger's Q4 greens; sea is the Listening Post teals into Q5;
+  sand, rock and snow likewise. The sky is the sunset ramp.
+- A small software renderer draws into an **indexed framebuffer** (one palette slot per pixel)
+  and shows it scaled up by whole numbers, so no blended colour can ever appear. A test checks
+  every pixel on screen against the palette.
+- The estate is 64 by 64 tiles and wraps round. Three 3 by 3 landing pads refuel the drone;
+  landing anywhere else is allowed if it is gentle, level and on even ground. The sea is
+  always a crash. A crash issues a replacement drone at Pad A.
+- The camera faces north, follows from behind and above, pulls back as the drone climbs, and
+  aims between the drone and its shadow so both stay in view.
+- It runs on its own animation frame loop (smooth flight needs it), not the shared six tick
+  clock. It **only starts when the player asks**, and pauses on Escape, a press outside it,
+  losing focus, or a hidden tab. Under reduced motion the start card says it moves a lot.
+- Added: desktop icon `survey`, Applications > Estate Survey, terminal command `survey`, and
+  `/usr/games/survey` plus `/usr/games/README` in the filesystem.
 
 ---
 

@@ -82,7 +82,8 @@ const near = (to: number, from: number) => to + Math.round((from - to) / N) * N;
 export function render(f: Frame, w: World, cam: Camera): void {
   const W = f.w;
   const H = f.h;
-  const focal = H * 1.15;
+  // The narrower side sets the field of view, so tall phone screens see more land, not less.
+  const focal = Math.min(H, W * 0.8) * 1.15;
   const horizon = H * 0.18;
   const cp = Math.cos(cam.pitch);
   const sp = Math.sin(cam.pitch);

@@ -43,6 +43,7 @@ const MESSAGES: Record<FlightEvent['type'], (e: FlightEvent) => string> = {
 };
 
 export function Survey({ clock }: AppProps) {
+  const root = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const world = useRef<World>(newWorld(terrain));
@@ -64,7 +65,7 @@ export function Survey({ clock }: AppProps) {
       if (!w || !h) return;
       const scale = Math.max(1, Math.round(w / BASE_W));
       const gw = Math.min(MAX_W, Math.floor(w / scale));
-      const gh = Math.max(100, Math.min(Math.round(gw * 0.8), Math.floor(h / scale)));
+      const gh = Math.max(100, Math.min(Math.round(gw * 1.6), Math.floor(h / scale)));
       setSize((s) => (s.w === gw && s.h === gh && s.scale === scale ? s : { w: gw, h: gh, scale }));
     };
     fit();
@@ -139,11 +140,18 @@ export function Survey({ clock }: AppProps) {
       }
     };
     raf = window.requestAnimationFrame(tick);
-    const onHidden = () => document.hidden && setPhase('paused');
+    const onHidden = () => document.hidden && pause();
+    // Pressing anywhere outside the game pauses it. (Focus alone is not enough: some browsers
+    // do not move focus when a button is clicked.)
+    const onPress = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) pause();
+    };
     document.addEventListener('visibilitychange', onHidden);
+    document.addEventListener('pointerdown', onPress, true);
     return () => {
       window.cancelAnimationFrame(raf);
       document.removeEventListener('visibilitychange', onHidden);
+      document.removeEventListener('pointerdown', onPress, true);
     };
   }, [phase]);
 
@@ -213,7 +221,7 @@ export function Survey({ clock }: AppProps) {
 
   const fuelBars = Math.round(hud.fuel / 10);
   return (
-    <div class="hs-survey">
+    <div class="hs-survey" ref={root}>
       <div class="hs-survey-hud" aria-hidden={phase === 'intro'}>
         <span class="hs-survey-fuel">
           FUEL{' '}
