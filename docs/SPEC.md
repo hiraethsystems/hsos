@@ -251,7 +251,7 @@ Optional full screen overlay of faint horizontal lines. Off by default. Never fl
 - Content areas scroll automatically when content is larger than the window (section 4.4).
 - Singleton apps (most of them) re-focus their existing window instead of opening another.
 - Keyboard: windows are focusable; Escape closes the focused dialog; future shortcut to cycle
-  windows.
+  windows. (Built in Phase 6 as Ctrl+backquote, see 12.4.)
 - Later (not v1): minimise to desktop, maximise, window list, snapping.
 
 ---
@@ -491,7 +491,7 @@ scrolling and focus. This is what keeps every future app looking like part of on
 - The address bar follows the focused page window (`history.replaceState`), so any window can
   be shared. It is left alone on first load. Closing every window returns it to `/`.
 - The desktop starts only at 900px wide and above; narrower screens keep the static pages
-  until Handheld mode (Phase 6).
+  until Handheld mode (Phase 6). (Superseded by 12.4: smaller screens now run Handheld.)
 - **Plain View** (◆ HSOS menu) turns the desktop off for the rest of the tab session
   (`sessionStorage` key `hsos.plain`) and shows a "Return to the desktop" button. This is for
   anyone who would rather just read.
@@ -552,6 +552,33 @@ scrolling and focus. This is what keeps every future app looking like part of on
   seized and disabled files, and the replies to `cat` or `open` with nothing after them.
 - The output is a `role="log"` live region, and `palette` draws each colour as a swatch with
   its name and hex code beside it in normal text, so dark colours stay readable.
+
+### 12.4 Decided 1.1, as built in Phase 6
+
+- **Colour cycling:** the sunset sun's bands roll and the grid lines step through the grid ramp
+  every third tick (about twice a second), only with colour cycling on.
+- **Switching windows:** Ctrl+backquote (the key left of 1) goes to the next window in opening
+  order, Ctrl+Shift+backquote to the previous one. Chosen by the owner, as Alt+Tab, Ctrl+Tab,
+  F6 and Alt+letters already belong to the system or the browser.
+- **Moving and resizing without a mouse:** with a window frame focused (as it is when it
+  opens or is switched to), arrow keys move it 20px and Shift with arrow keys resizes it. Every
+  window describes this to screen readers, and Help has a Keyboard Shortcuts memo.
+- **Reduced motion** now follows the system setting live, without a reload.
+- **HSOS Handheld** runs when the screen is under 900 by 560 pixels (so a phone held sideways
+  counts as handheld too). The static page is hidden at every size while the shell runs,
+  except in Plain View, and still shows if the shell has not started within 4 seconds.
+  - One app fills the screen below the menu bar. Windows behind it stay open (so the terminal
+    keeps its history) but hidden. Closing the app shows the one underneath, then the home
+    screen. Title bars cannot be dragged and there is no resize grip.
+  - The menu bar folds into one ◆ HSOS menu with every item, groups split by separators.
+  - The desktop icons become a home screen grid, out of reach of Tab while an app is open.
+  - `/` opens just WELCOME.dd; a deep link opens just that page.
+  - Handheld always plays the short boot, unless "Full boot every visit" is ticked or the
+    visitor chooses Reboot.
+  - Turning a tablet, or resizing a browser, switches between Handheld and the desktop live.
+    Windows keep their desktop positions for when there is room again.
+  - Known gap: the WELCOME.dd copy talks about dragging and resizing windows, which Handheld
+    does not do. The owner may want to reword it to suit both.
 
 ## 13. Content model
 

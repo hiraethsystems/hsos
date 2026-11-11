@@ -8,6 +8,7 @@
  * movement at all, off under reduced motion). They then call `useTick` with whichever applies.
  */
 import { useEffect, useState } from 'preact/hooks';
+import { prefersReducedMotion } from './settings';
 
 export const TICK_MS = 160;
 
@@ -40,6 +41,26 @@ export function onTick(fn: Listener): () => void {
       timer = undefined;
     }
   };
+}
+
+/**
+ * Whether the visitor asks for reduced motion, following the system setting live: switch it
+ * on mid-visit and every animation stops at once.
+ */
+export function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(prefersReducedMotion);
+  useEffect(() => {
+    let mq: MediaQueryList;
+    try {
+      mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    } catch {
+      return;
+    }
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return reduced;
 }
 
 /** The current tick, re-rendering on each one while `active`. Frozen when not active. */

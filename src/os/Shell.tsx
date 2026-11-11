@@ -8,7 +8,7 @@ import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 import { APP_COMMANDS, APP_MOUNTS, APPS, PENDING_APPS, resolveAppName } from './apps/registry';
 import { primePage } from './apps/page/PageView';
 import { BootScreen, type BootMode } from './boot/BootScreen';
-import type { AnimationClock } from './clock';
+import { useReducedMotion, type AnimationClock } from './clock';
 import { DesktopIcons, type DesktopIcon } from './desktop/DesktopIcons';
 import { Wallpaper } from './desktop/Wallpaper';
 import { MemoDialog } from './memo/MemoDialog';
@@ -16,7 +16,7 @@ import { MenuBar } from './menu/MenuBar';
 import { buildMenus, type MenuDef } from './menu/menus';
 import type { DivisionId } from './divisions';
 import { describeUrl, url as urls, vfsPath } from './routes';
-import { loadSettings, plainViewChosen, prefersReducedMotion, saveSettings, setPlainView, type Settings } from './settings';
+import { loadSettings, plainViewChosen, saveSettings, setPlainView, type Settings } from './settings';
 import type { AppArgs, Rect } from './types';
 import { clampRect, ICONS_W, MENU_H, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
 import { Window, WINDOW_HELP_ID } from './wm/Window';
@@ -209,7 +209,7 @@ function Desktop({ projects, memos }: Props) {
   const [bounds, setBounds] = useState<Bounds>(viewport);
   const [settings, setSettings] = useState(loadSettings);
   const [memo, setMemo] = useState<string | null>(null);
-  const [reducedMotion] = useState(prefersReducedMotion);
+  const reducedMotion = useReducedMotion();
   const [boot, setBoot] = useState<BootMode | null>(() => chooseBoot(settings, isHandheld()));
   const updateSettings = (patch: Partial<Settings>) =>
     setSettings((s) => {
