@@ -1,7 +1,7 @@
 ---
 name: UnThreader
 slug: unthreader
-division: defence-contracts
+division: countermeasures
 platform: Windows, Linux, macOS, Electron
 status: in-development
 summary: A desktop app that bulk deletes the posts and replies on your own Threads account.

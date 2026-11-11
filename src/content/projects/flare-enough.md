@@ -1,7 +1,7 @@
 ---
 name: Flare Enough
 slug: flare-enough
-division: morale
+division: occupational-health
 platform: Android, Kotlin
 status: in-development
 summary: An Android app for medication reminders, symptom logs and quiet minutes, for chronic illness.

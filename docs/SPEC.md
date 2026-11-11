@@ -37,8 +37,17 @@ Inspirations, in order of importance:
 - **The Board** is the corporation's oracle. It speaks in random corporate and melancholy words
   (a parody of TempleOS's random word oracle). It lives at `/opt/board/boardd`.
 - The visitor is `employee`, uid 1000, group `assets`. They are not in the sudoers file.
-- Products are filed into Divisions: Signals, Legacy Acquisitions, Leisure Compliance,
-  Defence Contracts, Morale (more can be added).
+- Products are filed into Divisions (more can be added in `src/os/divisions.ts`):
+  - Signals: radio.
+  - Legacy Acquisitions: ports of other people's software.
+  - Leisure Compliance: games.
+  - General Services: everything else, such as TV, sound and desktop tools.
+  - Countermeasures: defence, and tools that push back (RBR-1, UnThreader).
+  - Occupational Health: health and wellbeing.
+  Renamed by the owner on 11 November 2026: Defence Contracts became Countermeasures, Morale
+  became Occupational Health, and General Services was added. Leisure Compliance now holds
+  games only. The old addresses forward to the new ones (`redirects` in `astro.config.mjs`).
+  The MORALE meter, `/proc/morale` and the Ledger are company jokes, not the division, and stay.
 - Nothing can be deleted, resigned from, or logged out of. Redundancies are handled by HR.
 
 ### 1.2 Tone of voice
@@ -665,7 +674,7 @@ scrolling and focus. This is what keeps every future app looking like part of on
 ```yaml
 name: VitaSDR
 slug: vitasdr
-division: signals            # signals | legacy-acquisitions | leisure-compliance | defence-contracts | morale
+division: signals            # signals | legacy-acquisitions | leisure-compliance | general-services | countermeasures | occupational-health
 platform: PS Vita, C, VitaSDK
 status: in-development      # planned | in-development | prototype | released | archived
 summary: One or two plain sentences, no satire.
@@ -686,13 +695,13 @@ description itself stays factual so people can actually learn about the project.
 summary, body. Rendered as an internal memorandum.
 
 Initial projects: VitaSDR (Signals), DX Garden (Signals), Moon Child Vita (Legacy
-Acquisitions), DreamKartsU (Leisure Compliance), RBR-1 (Defence Contracts). The first four
+Acquisitions), DreamKartsU (Leisure Compliance), RBR-1 (Defence Contracts, now Countermeasures). The first four
 were written from their GitHub READMEs with screenshots from their repositories. RBR-1 has
 no repository yet and stays a placeholder until the owner supplies it (`docs/CONTENT.md`).
 
 Added on 11 November 2026, also written from their GitHub READMEs: EtherLog, OWTR Viewer and
-DX Garden Stations (Signals), NetSplitElectron (Legacy Acquisitions), Bonsai and ByteNoise
-(Leisure Compliance), UnThreader (Defence Contracts) and Flare Enough (Morale). EtherLog, OWTR
+DX Garden Stations (Signals), NetSplitElectron, Bonsai and ByteNoise (General Services),
+UnThreader (Countermeasures) and Flare Enough (Occupational Health). EtherLog, OWTR
 Viewer, DX Garden Stations and ByteNoise have no screenshot in their repositories yet. Other
 repositories on the owner's GitHub (Ionosonde, DX-Garden-Win, the vita-homebrew and
 wiiu-homebrew catalogues, and this site) were left off by the owner's choice.

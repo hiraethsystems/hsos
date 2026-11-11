@@ -4,11 +4,12 @@
  * The id is used in URLs and the filesystem: /srv/divisions/<id>/<project>/
  */
 export const DIVISIONS = [
-  { id: 'signals', name: 'Signals' },
-  { id: 'legacy-acquisitions', name: 'Legacy Acquisitions' },
-  { id: 'leisure-compliance', name: 'Leisure Compliance' },
-  { id: 'defence-contracts', name: 'Defence Contracts' },
-  { id: 'morale', name: 'Morale' },
+  { id: 'signals', name: 'Signals' }, // radio
+  { id: 'legacy-acquisitions', name: 'Legacy Acquisitions' }, // ports of other people's work
+  { id: 'leisure-compliance', name: 'Leisure Compliance' }, // games
+  { id: 'general-services', name: 'General Services' }, // everything else
+  { id: 'countermeasures', name: 'Countermeasures' },
+  { id: 'occupational-health', name: 'Occupational Health' },
 ] as const;
 
 export type DivisionId = (typeof DIVISIONS)[number]['id'];

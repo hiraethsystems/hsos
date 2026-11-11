@@ -1,7 +1,7 @@
 ---
 name: NetSplitElectron
 slug: netsplitelectron
-division: legacy-acquisitions
+division: general-services
 platform: Linux, Windows, Electron
 status: in-development
 summary: A Linux and Windows port of Netsplit, the modern macOS IRC client, built with Electron.

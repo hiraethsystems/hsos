@@ -1,7 +1,7 @@
 ---
 name: Bonsai
 slug: bonsai
-division: leisure-compliance
+division: general-services
 platform: Windows, Linux, Python, Qt
 status: released
 summary: Trims a big IPTV channel list down to a small playlist for low spec players like the PS Vita.

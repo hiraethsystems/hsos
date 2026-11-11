@@ -1,7 +1,7 @@
 ---
 name: ByteNoise
 slug: bytenoise
-division: leisure-compliance
+division: general-services
 platform: Windows, macOS, Linux, Python, PyQt5
 status: in-development
 summary: A desktop instrument that reads the raw bytes of any file and plays them as sound.

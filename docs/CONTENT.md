@@ -52,7 +52,7 @@ UnThreader and Flare Enough) were added the same way on the same day, straight t
 - Screenshot: yes, taken from the repository
 
 ## RBR-1
-- Division: Defence Contracts
+- Division: Countermeasures
 - Platform: OpenSCAD, 3D printed
 - Status: prototype
 - One line summary: [write me]
