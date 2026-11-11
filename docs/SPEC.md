@@ -227,7 +227,7 @@ dark bottom-right border), lilac checkered track, bevelled arrow buttons. Use
 - Sprites are defined as arrays of palette indices (or palette names) and drawn to `<canvas>`
   with `image-rendering: pixelated`, or as CSS grids for tiny ones. Keep them crisp: integer
   scaling only.
-- Logo: 24x24, drawn at 3x (masthead and boot screen). An enso brush circle in the logo ramp,
+- Logo: 24x24, drawn at 3x (masthead and boot screen). An enso brush circle in white ink,
   landing heavy at the top and lifting thin at the upper right, with a sea wave breaking
   inside it in the wave ramp. Replaced the prototype's sliced sun diamond in November 2026.
 - From the prototype: 14x9 Board eye whose iris colour cycles and which blinks every few

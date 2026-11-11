@@ -192,39 +192,38 @@ const bin = spriteFromArt(
 
 /**
  * The Hiraeth Systems logo, 24 by 24: an enso (one open brush circle) with a sea wave breaking
- * inside it. Drawn by hand. The stroke lands heavy at the top, runs anticlockwise and lifts
- * thin at the upper right, stepping through the logo ramp as it goes (digits 0 to 8). The wave
- * uses the wave ramp, crest to trough, with white foam.
+ * inside it. Drawn by hand. The stroke is white ink: it lands heavy at the top, runs
+ * anticlockwise and lifts thin at the upper right. The wave uses the wave ramp, crest to
+ * trough, with white foam.
  */
 const LOGO_ART = spriteFromArt(
   [
-    '.........0000...........',
-    '.......110000000........',
-    '.....1111000000000......',
-    '....111111000000000.....',
-    '...2211111.0000000......',
-    '..222211.....000........',
-    '..22222.................',
-    '.22222.......WWWWW......',
-    '.22222.....WWAAAAAW...8.',
-    '.2222.....WAABBBBAW...8.',
-    '33333....WABB....BB...88',
-    '33333....WAB.WW..BB...88',
-    '33333.....W.WAB..BB...88',
-    '33333......WAB..BBC..888',
-    '.3333.......B..BBCC..78.',
-    '.33344.......BBBCCC.777.',
-    '.3444.....WWBBCCCCD.777.',
-    '..444...WWBBCCCDDDD.77..',
-    '..4444.WWBBCCDDDDD.777..',
-    '...44444555.....66777...',
-    '....4445555556666667....',
-    '.....45555555666666.....',
-    '.......5555556666.......',
-    '..........5556..........',
+    '.........WWWW...........',
+    '.......WWWWWWWWW........',
+    '.....WWWWWWWWWWWWW......',
+    '....WWWWWWWWWWWWWWW.....',
+    '...WWWWWWW.WWWWWWW......',
+    '..WWWWWW.....WWW........',
+    '..WWWWW.................',
+    '.WWWWW.......WWWWW......',
+    '.WWWWW.....WWAAAAAW...W.',
+    '.WWWW.....WAABBBBAW...W.',
+    'WWWWW....WABB....BB...WW',
+    'WWWWW....WAB.WW..BB...WW',
+    'WWWWW.....W.WAB..BB...WW',
+    'WWWWW......WAB..BBC..WWW',
+    '.WWWW.......B..BBCC..WW.',
+    '.WWWWW.......BBBCCC.WWW.',
+    '.WWWW.....WWBBCCCCD.WWW.',
+    '..WWW...WWBBCCCDDDD.WW..',
+    '..WWWW.WWBBCCDDDDD.WWW..',
+    '...WWWWWWWW.....WWWWW...',
+    '....WWWWWWWWWWWWWWWW....',
+    '.....WWWWWWWWWWWWWW.....',
+    '.......WWWWWWWWWW.......',
+    '..........WWWW..........',
   ],
   {
-    ...Object.fromEntries([...'012345678'].map((d) => [d, `logo.${d}` as const])),
     W: 'white',
     A: 'wave.0',
     B: 'wave.1',

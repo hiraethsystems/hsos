@@ -93,8 +93,6 @@ const RAMP_DEFS = {
   heat: { colours: stepBetween(['#04001a', '#14005a', '#4a0a8a', '#a0208a', '#ff4a4a', '#ffaa2a', '#ffee66', '#ffffff'], 32) },
   cycle: { colours: stepBetween(['#ff3a8a', '#ff8a3a', '#ffd23a', '#3ad27a', '#3aa8ff', '#8a3aff', '#ff3a8a'], 24) },
   sky: { colours: stepBetween(['#140030', '#2a0a5a', '#5a1280', '#9a2090', '#e0407a', '#ff8a5a', '#ffc04a'], 12), css: 'v' },
-  /** The logo's enso brush stroke, from where the brush lands to where it lifts. */
-  logo: { colours: stepBetween(['#ffee66', '#ffaa2a', '#ff5a5a', '#d02a8a', '#6a1aa8'], 9) },
   /** The wave inside the logo, crest to trough. */
   wave: { colours: ['#9af0ff', '#3cb4dc', '#1478aa', '#0a4678'] },
   /** Boot progress bar. */
