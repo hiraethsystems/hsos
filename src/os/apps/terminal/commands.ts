@@ -24,6 +24,8 @@ const APP_NAMES: Readonly<Record<string, string>> = {
   settings: 'settings',
   terminal: 'terminal',
   term: 'terminal',
+  survey: 'survey',
+  game: 'survey',
 };
 
 /** Open the app a file stands for, if it stands for one. */

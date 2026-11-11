@@ -98,6 +98,29 @@ const ledger = spriteFromArt(
   { i: 'ink', W: 'white', Y: 'ledger-q2.2', G: 'ledger-q4.2', R: 'ledger-q1.2', B: 'ledger-q6.2' },
 );
 
+/** survey : a drone over the estate's tiles. */
+const survey = spriteFromArt(
+  [
+    '................',
+    '.......WW.......',
+    '......WLLW......',
+    '.....WLLLLW.....',
+    '....WLLRRLLW....',
+    '...WLLRRRRLLW...',
+    '..WWWW....WWWW..',
+    '......Y..Y......',
+    '.....Y....Y.....',
+    '................',
+    'GGGGHHHHGGGGHHHH',
+    'GGGGHHHHGGGGHHHH',
+    'HHHHGGGGHHHHGGGG',
+    'HHHHGGGGHHHHGGGG',
+    'GGGGHHHHGGGGHHHH',
+    'GGGGHHHHGGGGHHHH',
+  ],
+  { W: 'white', L: 'light-grey', R: 'hr.1', Y: 'heat.28', G: 'files.1', H: 'ledger-q4.1' },
+);
+
 /** terminal : the legacy text layer. */
 const terminal = spriteFromArt(
   [
@@ -189,7 +212,7 @@ function buildLogo(): Sprite {
   return { w: 16, h: 16, pixels };
 }
 
-export const ICONS = { folder, eye, waterfall, ledger, terminal, gear, bin } as const;
+export const ICONS = { folder, eye, waterfall, ledger, survey, terminal, gear, bin } as const;
 export type IconName = keyof typeof ICONS;
 export const LOGO = buildLogo();
 

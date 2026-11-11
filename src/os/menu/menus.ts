@@ -58,6 +58,7 @@ export function buildMenus(a: MenuActions): MenuDef[] {
         { label: 'The Board', hint: 'F7', run: () => a.open('board') },
         { label: 'Listening Post 7', hint: '/dev/lp7', run: () => a.open('listening') },
         { label: 'Ledger', run: () => a.open('ledger') },
+        { label: 'Estate Survey', hint: '/usr/games', run: () => a.open('survey') },
         'separator',
         { label: 'Settings', run: () => a.open('settings') },
       ],

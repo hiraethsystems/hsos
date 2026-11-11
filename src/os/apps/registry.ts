@@ -10,6 +10,7 @@ import { ledgerApp } from './ledger';
 import { listeningApp } from './listening';
 import { pageApp } from './page';
 import { settingsApp } from './settings';
+import { surveyApp } from './survey';
 import { terminalApp } from './terminal';
 
 export const APPS: Readonly<Record<string, HsosApp>> = {
@@ -19,6 +20,7 @@ export const APPS: Readonly<Record<string, HsosApp>> = {
   [listeningApp.id]: listeningApp,
   [settingsApp.id]: settingsApp,
   [terminalApp.id]: terminalApp,
+  [surveyApp.id]: surveyApp,
 };
 
 /** Terminal commands added by apps. */

@@ -20,6 +20,7 @@ export const LINKABLE_APPS = [
   'ledger',
   'settings',
   'terminal',
+  'survey',
 ] as const;
 export type LinkableApp = (typeof LINKABLE_APPS)[number];
 

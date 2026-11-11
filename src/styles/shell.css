@@ -805,3 +805,94 @@ html.hsos-shell body {
     display: none;
   }
 }
+
+/* ---- Estate Survey (/usr/games/survey) ---------------------------------------------------- */
+
+.hs-survey {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--c-white);
+  background: var(--c-black);
+}
+.hs-survey-hud {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+  padding: 2px 10px;
+  color: var(--c-term-prompt);
+  background: var(--c-term-body);
+}
+.hs-survey-fuel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hs-survey-gauge {
+  display: flex;
+  gap: 2px;
+}
+.hs-survey-gauge span {
+  width: 6px;
+  height: 12px;
+  background: var(--c-dark-grey);
+}
+.hs-survey-gauge span.is-on {
+  background: var(--c-term-prompt);
+}
+.hs-survey-gauge span.is-low {
+  background: var(--c-term-error);
+}
+.hs-survey-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+.hs-survey-stage:focus {
+  outline: none;
+}
+.hs-survey-stage:focus-visible {
+  outline: 3px solid var(--c-highlight);
+  outline-offset: -3px;
+}
+.hs-survey-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: min(420px, calc(100% - 32px));
+  padding: 12px 16px;
+  color: var(--c-ink);
+  background: var(--c-paper);
+  border: 2px solid var(--ramp-files-0);
+  box-shadow: 5px 5px 0 var(--c-shadow-files);
+  cursor: default;
+}
+.hs-survey-card p {
+  margin: 0;
+}
+.hs-survey-status {
+  flex: none;
+  margin: 0;
+  padding: 2px 10px;
+  color: var(--c-term-notice);
+  background: var(--c-term-body);
+}
+.hs-survey-thrust {
+  position: absolute;
+  right: 12px;
+  bottom: 40px;
+  min-width: 96px;
+  min-height: 64px;
+  touch-action: none;
+  user-select: none;
+}

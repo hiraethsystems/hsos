@@ -327,6 +327,7 @@ function Desktop({ projects, memos }: Props) {
     { label: 'boardd', icon: 'eye', description: 'The Board', run: () => open('board') },
     { label: '/dev/lp7', icon: 'waterfall', description: 'Listening Post 7', run: () => open('listening') },
     { label: 'ledger', icon: 'ledger', description: 'morale by quarter', run: () => open('ledger') },
+    { label: 'survey', icon: 'survey', description: 'Estate Survey, a game', run: () => open('survey') },
     { label: 'terminal', icon: 'terminal', description: 'the legacy text layer', run: () => open('terminal') },
     { label: '/etc/hsos', icon: 'gear', description: 'Workplace Settings', run: () => open('settings') },
     {
