@@ -31,6 +31,8 @@ export const BOAT_SIZE: Record<BoatKind, { r: number; top: number }> = {
 const CRUISE: Record<BoatKind, number> = { dinghy: 0.15, sail: 0.35, tug: 0.25 };
 
 const wrap = (n: number) => ((n % N) + N) % N;
+/** The short way round between two coordinates on the wrapping estate. */
+const wrapGap = (d: number) => Math.abs(wrap(d + N / 2) - N / 2);
 
 /** Open sea at a point: a sea tile, not a lake. */
 export function openSea(t: Terrain, x: number, z: number): boolean {
@@ -43,18 +45,22 @@ function roomy(t: Terrain, x: number, z: number, r: number): boolean {
   return openSea(t, x, z);
 }
 
-/** Scatters a few boats over the sea: roughly one for every hundred sea tiles, at most ten. */
+/** Sea tiles per boat, so a watery estate is as busy as a dry one, never more crowded. */
+export const SEA_PER_BOAT = 110;
+
+/** Scatters boats over the sea, one for every SEA_PER_BOAT sea tiles, the three kinds in turn. */
 export function placeBoats(t: Terrain, rand: () => number): Boat[] {
   let sea = 0;
   for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) if (openSea(t, i + 0.5, j + 0.5)) sea++;
-  const want = Math.min(10, Math.round(sea / 100));
+  const want = Math.round(sea / SEA_PER_BOAT);
+  const first = Math.floor(rand() * BOAT_KINDS.length);
   const boats: Boat[] = [];
-  for (let tries = 0; boats.length < want && tries < 500; tries++) {
+  for (let tries = 0; boats.length < want && tries < 4000; tries++) {
     const x = rand() * N;
     const z = rand() * N;
     if (!roomy(t, x, z, 1.2)) continue;
-    if (boats.some((b) => Math.hypot(b.x - x, b.z - z) < 4)) continue;
-    const kind = BOAT_KINDS[Math.floor(rand() * BOAT_KINDS.length)]!;
+    if (boats.some((b) => Math.hypot(wrapGap(b.x - x), wrapGap(b.z - z)) < 4)) continue;
+    const kind = BOAT_KINDS[(first + boats.length) % BOAT_KINDS.length]!;
     boats.push({ kind, x, z, heading: rand() * Math.PI * 2, speed: CRUISE[kind], turn: 0, phase: rand() * Math.PI * 2 });
   }
   return boats;

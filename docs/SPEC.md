@@ -478,12 +478,19 @@ own tilt over a 3D landscape of flat shaded tiles, with gravity, momentum and fu
   at Pad A.
 - **Landing pads** look like landing pads (owner's request): dark tarmac, yellow and black
   hazard stripes round the edge, the pad's letter (A, B or C) painted large in white, and a
-  green lamp on a post at each corner. They stay yellow on the minimap.
-- **Boats** potter about on the sea (owner's request), never on lakes: roughly one per hundred
-  sea tiles, at most ten. Three kinds: a wooden rowing dinghy, a sailing boat with a company
+  green lamp on a post at each corner. The lamps blink slowly (owner's request), on for 0.8s
+  and off for 0.4s, each pad out of step with the others; under reduced motion they stay lit.
+  Pads stay yellow on the minimap.
+- **Boats** potter about on the sea (owner's request), never on lakes: one per 110 sea tiles
+  with no cap, so every estate is equally busy for its size (owner's request); the three kinds
+  take turns so they come out evenly. Three kinds: a wooden rowing dinghy, a sailing boat with a company
   red sail, and a tug with a red hull, white wheelhouse and yellow funnel. They drift slowly,
   bob on the swell, wander now and then, and turn away before they run aground. They only move
-  while the game runs, and they are not on the minimap.
+  while the game runs, and show on the minimap as red specks (owner's request).
+- **Draw distance** is 96 tiles ahead (owner's request; it was 30, which left the sky filling
+  half the view). Land is drawn tile by tile out to 32, in 2 by 2 blocks out to 60, then 4 by 4
+  blocks, which keeps a frame around 2ms. Trees and pad lamps stop at 60. The estate is only 64
+  wide, so the far distance shows the land repeating, which is honest: it wraps round.
 - A **minimap** sits in the top left of the view (owner's request): the whole estate, one
   pixel per tile (two on big views), north up and centred on the drone, drawn into the same
   framebuffer. Pads are yellow, woods dark green, the drone a white cross.

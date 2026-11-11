@@ -53,6 +53,9 @@ const MESSAGES: Record<FlightEvent['type'], (e: FlightEvent) => string> = {
 
 export function Survey({ clock }: AppProps) {
   const root = useRef<HTMLDivElement>(null);
+  // Read inside the frame loop, so kept in a ref rather than captured once.
+  const motion = useRef(clock.motion);
+  motion.current = clock.motion;
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const world = useRef<World>(newEstate());
@@ -94,7 +97,7 @@ export function Survey({ clock }: AppProps) {
   function draw() {
     const fr = frame.current;
     if (!fr) return;
-    render(fr.f, world.current, cam.current);
+    render(fr.f, world.current, cam.current, { blink: motion.current });
     fr.f.toImage(fr.img);
     fr.ctx.putImageData(fr.img, 0, 0);
   }

@@ -176,8 +176,14 @@ const PAD_LAMPS: [number, number][] = [
   [PAD_SIZE - 0.1, PAD_SIZE - 0.1],
 ];
 
-/** Draw distance in tiles ahead of the camera, and the view's focal length (per pixel row). */
-const DEPTH = 30;
+/**
+ * Draw distance in tiles ahead of the camera. It is further than the estate is wide, so far off
+ * you see the land repeat, which is true: the estate wraps round.
+ */
+const DEPTH = 96;
+/** Single tiles out to this far ahead, then 2 by 2 blocks out to MEDIUM, then 4 by 4. */
+const FINE = 32;
+const MEDIUM = 60;
 const NEAR = 0.4;
 
 export interface Camera {
@@ -205,7 +211,12 @@ export function cameraFor(w: World): Camera {
 /** The shortest way round the wrapping estate, from `from` to `to`. */
 const near = (to: number, from: number) => to + Math.round((from - to) / N) * N;
 
-export function render(f: Frame, w: World, cam: Camera): void {
+export interface RenderOptions {
+  /** Things may blink (the pad lamps). Off under reduced motion. */
+  blink: boolean;
+}
+
+export function render(f: Frame, w: World, cam: Camera, opts: RenderOptions = { blink: true }): void {
   const W = f.w;
   const H = f.h;
   // The narrower side sets the field of view, so tall phone screens see more land, not less.
@@ -247,7 +258,8 @@ export function render(f: Frame, w: World, cam: Camera): void {
   const shipRow = Math.floor(sz);
   // Looking down, rows a little behind the camera can still be in view.
   const j0 = Math.floor(cam.z) - 6;
-  const j1 = Math.floor(cam.z + DEPTH);
+  const four = (n: number) => Math.floor(n / 4) * 4;
+  const j1 = four(cam.z + DEPTH) + 4;
   const t = w.terrain;
 
   // Boats, filed by the row they sit in, so each is drawn in among the land like the trees.
@@ -257,32 +269,50 @@ export function render(f: Frame, w: World, cam: Camera): void {
     boatRows.set(row, [...(boatRows.get(row) ?? []), b]);
   }
 
-  for (let j = j1; j >= j0; j--) {
+  // Far land is drawn in bigger blocks: single tiles close by, 2 by 2 further out, 4 by 4 at
+  // the far end. The block edges are multiples of 4, so blocks always line up with each other.
+  const b1 = four(cam.z + FINE);
+  const b2 = four(cam.z + MEDIUM);
+  for (let top = j1; top > j0; ) {
+    const step = top > b2 ? 4 : top > b1 ? 2 : 1;
+    const j = top - step;
+    top = j;
     // How far away this row's ground roughly is, to know how wide it spreads on screen.
-    const rowDepth = Math.max(1, (j - cam.z) * cp + cam.y * sp);
-    const half = Math.ceil(rowDepth * (W / focal) * 0.62) + 3;
-    const i0 = Math.floor(cam.x) - half;
+    const rowDepth = Math.max(1, (j + step - cam.z) * cp + cam.y * sp);
+    const half = Math.ceil(rowDepth * (W / focal) * 0.62) + 3 + step;
+    const i0 = Math.floor((Math.floor(cam.x) - half) / step) * step;
     const i1 = Math.floor(cam.x) + half;
-    for (let i = i0; i <= i1; i++) {
+    for (let i = i0; i <= i1; i += step) {
       const h00 = vertex(t, i, j);
-      const h10 = vertex(t, i + 1, j);
-      const h01 = vertex(t, i, j + 1);
-      const h11 = vertex(t, i + 1, j + 1);
+      const h10 = vertex(t, i + step, j);
+      const h01 = vertex(t, i, j + step);
+      const h11 = vertex(t, i + step, j + step);
       const a: V3 = [i, h00, j];
-      const b: V3 = [i + 1, h10, j];
-      const c: V3 = [i, h01, j + 1];
-      const d: V3 = [i + 1, h11, j + 1];
-      const parity = (i + j) & 1;
-      if (isWater(t, i, j)) {
+      const b: V3 = [i + step, h10, j];
+      const c: V3 = [i, h01, j + step];
+      const d: V3 = [i + step, h11, j + step];
+      const parity = ((i + j) / step) & 1;
+      // A block takes its character from the tile in its middle.
+      const mi = i + (step >> 1);
+      const mj = j + (step >> 1);
+      if (isWater(t, mi, mj)) {
         // Lakes sit higher and read a little lighter than the sea.
-        const slot = MATERIALS.sea[(h00 > SEA ? 4 : 3) + parity]!;
-        tri(a, b, d, slot);
-        tri(a, d, c, slot);
+        const level = vertex(t, mi, mj);
+        const slot = MATERIALS.sea[(level > SEA ? 4 : 3) + parity]!;
+        const flat = (v: V3): V3 => [v[0], level, v[2]];
+        tri(flat(a), flat(b), flat(d), slot);
+        tri(flat(a), flat(d), flat(c), slot);
         continue;
       }
-      const pad = padAt(t, i, j);
-      if (pad) {
+      const pad = padAt(t, mi, mj);
+      if (pad && step === 1) {
         drawPadTile(pad - 1, i, j, h00, parity);
+        continue;
+      }
+      if (pad) {
+        const slot = MATERIALS.tarmac[1 + parity]!;
+        tri(a, b, d, slot);
+        tri(a, d, c, slot);
         continue;
       }
       const avg = (h00 + h10 + h01 + h11) / 4;
@@ -291,15 +321,19 @@ export function render(f: Frame, w: World, cam: Camera): void {
       tri(a, b, d, shade(mat, lit(cross(sub(d, a), sub(b, a))), parity));
       tri(a, d, c, shade(mat, lit(cross(sub(c, a), sub(d, a))), parity));
     }
-    // Trees stand on this row, so they go in after its tiles and before the nearer rows.
-    for (let i = i0; i <= i1; i++) {
-      const tree = treeAt(t, i, j);
-      if (tree) drawTree(i + (tree.x - Math.floor(tree.x)), tree.y, j + (tree.z - Math.floor(tree.z)), tree.height);
-      const pad = padAt(t, i, j);
-      if (pad) drawPadLamps(pad - 1, i, j, vertex(t, i, j));
+    // What stands on these rows goes in after their ground and before the nearer rows.
+    for (let r = j + step - 1; r >= j; r--) {
+      if (step < 4) {
+        for (let i = i0; i <= i1 + step; i++) {
+          const tree = treeAt(t, i, r);
+          if (tree) drawTree(i + (tree.x - Math.floor(tree.x)), tree.y, r + (tree.z - Math.floor(tree.z)), tree.height);
+          const pad = padAt(t, i, r);
+          if (pad) drawPadLamps(pad - 1, i, r, vertex(t, i, r));
+        }
+      }
+      for (const b of boatRows.get(r) ?? []) drawBoat(b);
+      if (r === shipRow) drawShip(sx, sz);
     }
-    for (const b of boatRows.get(j) ?? []) drawBoat(b);
-    if (j === shipRow) drawShip(sx, sz);
   }
   if (shipRow < j0 || shipRow > j1) drawShip(sx, sz);
 
@@ -338,7 +372,8 @@ export function render(f: Frame, w: World, cam: Camera): void {
       const post = MATERIALS.hull[0]!;
       tri([x - 0.02, h, z], [x + 0.02, h, z], [x + 0.02, h + 0.12, z], post);
       tri([x - 0.02, h, z], [x + 0.02, h + 0.12, z], [x - 0.02, h + 0.12, z], post);
-      const lamp = MATERIALS.lamp[1]!;
+      // On for most of each second and off for the rest: slow enough to be calm, never a flicker.
+      const lamp = MATERIALS.lamp[!opts.blink || (w.time + k * 0.25) % 1.2 < 0.8 ? 1 : 0]!;
       tri([x - 0.045, h + 0.1, z], [x + 0.045, h + 0.1, z], [x + 0.045, h + 0.18, z], lamp);
       tri([x - 0.045, h + 0.1, z], [x + 0.045, h + 0.18, z], [x - 0.045, h + 0.18, z], lamp);
     }
@@ -453,7 +488,7 @@ export function render(f: Frame, w: World, cam: Camera): void {
 
 /**
  * The minimap, top left: the whole estate, one pixel per tile (two on big views), north up,
- * centred on the drone. The drone is a white cross; pads are yellow.
+ * centred on the drone. The drone is a white cross, pads are yellow and boats are red specks.
  */
 function drawMinimap(f: Frame, w: World): void {
   const scale = f.h >= 360 ? 2 : 1;
@@ -477,6 +512,13 @@ function drawMinimap(f: Frame, w: World): void {
       }
       f.px[py * f.w + px] = slot;
     }
+  }
+  // Boats, as a red speck each.
+  const red = MATERIALS.sail[MATERIALS.sail.length - 1]!;
+  for (const b of w.boats) {
+    const bx = ((Math.floor(b.x) - ci + N / 2) % N + N) % N;
+    const by = ((cj + N / 2 - 1 - Math.floor(b.z)) % N + N) % N;
+    for (let dy = 0; dy < scale; dy++) for (let dx = 0; dx < scale; dx++) f.px[(oy + by * scale + dy) * f.w + ox + bx * scale + dx] = red;
   }
   if (w.ship.status === 'crashed') return;
   const cx = ox + (N / 2) * scale + Math.floor(scale / 2);
