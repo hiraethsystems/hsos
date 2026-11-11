@@ -1,0 +1,34 @@
+---
+/**
+ * A sprite drawn as crisp SVG at build time, for static pages that must work without
+ * JavaScript. One path per palette colour; decorative, so hidden from screen readers.
+ */
+import { PALETTE } from '../os/palette';
+import type { Sprite } from '../os/sprites/sprite';
+
+interface Props {
+  sprite: Sprite;
+  scale?: number;
+  class?: string;
+}
+const { sprite, scale = 3, class: className } = Astro.props;
+const paths = new Map<number, string>();
+sprite.pixels.forEach((slot, i) => {
+  if (slot === null) return;
+  const x = i % sprite.w;
+  const y = Math.floor(i / sprite.w);
+  paths.set(slot, `${paths.get(slot) ?? ''}M${x} ${y}h1v1h-1z`);
+});
+---
+
+<svg
+  class={className}
+  width={sprite.w * scale}
+  height={sprite.h * scale}
+  viewBox={`0 0 ${sprite.w} ${sprite.h}`}
+  shape-rendering="crispEdges"
+  aria-hidden="true"
+  focusable="false"
+>
+  {[...paths].map(([slot, d]) => <path fill={PALETTE[slot]} d={d} />)}
+</svg>

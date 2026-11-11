@@ -5,18 +5,22 @@
 import type { LinkableApp } from '../links';
 import { APP_STATIC_URL } from '../links';
 import type { HsosApp } from '../types';
+import { boardApp } from './board';
+import { ledgerApp } from './ledger';
+import { listeningApp } from './listening';
 import { pageApp } from './page';
+import { settingsApp } from './settings';
 
 export const APPS: Readonly<Record<string, HsosApp>> = {
   [pageApp.id]: pageApp,
+  [boardApp.id]: boardApp,
+  [ledgerApp.id]: ledgerApp,
+  [listeningApp.id]: listeningApp,
+  [settingsApp.id]: settingsApp,
 };
 
-/** Apps still being built (Phases 4 and 5). Opening one shows its HR memo instead. */
+/** Apps still being built (Phase 5). Opening one shows its HR memo instead. */
 export const PENDING_APPS: Readonly<Record<string, string>> = {
-  board: 'The Board is in session and cannot be disturbed. Consultations open next quarter.',
-  listening: 'Listening Post 7 is being recalibrated. Intercepts will resume next quarter.',
-  ledger: 'The Ledger is being audited. Figures will be released once they look better.',
-  settings: 'Workplace Settings are under review by the Compliance Committee. Your preferences have been noted.',
   terminal: 'The legacy text layer is being restored from tape. Please hold.',
 };
 

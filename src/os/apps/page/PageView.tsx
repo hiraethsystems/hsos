@@ -5,6 +5,8 @@
  */
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { TargetedMouseEvent } from 'preact';
+import { useTick } from '../../clock';
+import { RAMP } from '../../palette';
 import { describeUrl } from '../../routes';
 import type { AppProps } from '../../types';
 
@@ -24,7 +26,7 @@ async function fetchBody(url: string): Promise<string> {
   return body.innerHTML;
 }
 
-export function PageView({ args, open }: AppProps) {
+export function PageView({ args, open, clock }: AppProps) {
   const url = args.url ?? '/';
   const [html, setHtml] = useState<string | null>(cache.get(url) ?? null);
   const [failed, setFailed] = useState(false);
@@ -63,6 +65,17 @@ export function PageView({ args, open }: AppProps) {
       }
     });
   }, [html]);
+
+  // Colour cycling (SPEC 4.6): letters marked data-cycle step along the cycle ramp each tick.
+  const cycles = html?.includes('data-cycle') ?? false;
+  const tick = useTick(clock.cycling && cycles);
+  useEffect(() => {
+    if (!cycles) return;
+    const n = RAMP.cycle.length;
+    ref.current?.querySelectorAll<HTMLElement>('[data-cycle]').forEach((el) => {
+      el.style.color = `var(--ramp-cycle-${(Number(el.dataset.cycle) + tick) % n})`;
+    });
+  }, [tick, cycles]);
 
   const onClick = (e: TargetedMouseEvent<HTMLDivElement>) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;

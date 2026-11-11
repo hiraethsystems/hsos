@@ -2,22 +2,29 @@
 /** WELCOME.dd, the Employee Handbook, as a static page (SPEC 3.3, 11.1). */
 import { render } from 'astro:content';
 import Document from '../layouts/Document.astro';
-import { rampStep } from '../os/palette';
+import SpriteSvg from '../components/SpriteSvg.astro';
+import { RAMP } from '../os/palette';
+import { LOGO } from '../os/sprites/icons';
 import { vfsPath } from '../os/routes';
 import { getPage } from '../site/content';
 
 const page = await getPage('welcome');
 const { Content } = await render(page);
-// The static page shows one frame of the colour cycle; the desktop will animate it.
-const letters = [...'HIRAETH SYSTEMS'].map((ch, i) => ({ ch, colour: rampStep('cycle', i) }));
+// The static page shows one frame of the colour cycle; the desktop animates it by moving each
+// letter along the cycle ramp (data-cycle is the letter's starting step).
+const steps = RAMP.cycle.length;
+const letters = [...'HIRAETH SYSTEMS'].map((ch, i) => ({ ch, step: i % steps }));
 ---
 
 <Document title={page.data.title} path={vfsPath.welcome} section="welcome" description={page.data.summary}>
   <div class="masthead">
-    <p class="masthead-title" aria-hidden="true">
-      {letters.map((l) => <span style={`color: ${l.colour}`}>{l.ch}</span>)}
-    </p>
-    <p class="masthead-tagline">The Corporation's Official Workplace. 256 colours. One voice.</p>
+    <SpriteSvg sprite={LOGO} scale={4} class="masthead-logo" />
+    <div>
+      <p class="masthead-title" aria-hidden="true">
+        {letters.map((l) => <span data-cycle={l.step} style={`color: var(--ramp-cycle-${l.step})`}>{l.ch}</span>)}
+      </p>
+      <p class="masthead-tagline">The Corporation's Official Workplace. 256 colours. One voice.</p>
+    </div>
   </div>
   <div class="prose">
     <h2 class="visually-hidden">Hiraeth Systems Employee Handbook</h2>

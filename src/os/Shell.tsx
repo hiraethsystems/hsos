@@ -7,6 +7,7 @@ import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 import { APPS, PENDING_APPS, resolveAppName } from './apps/registry';
 import { primePage } from './apps/page/PageView';
 import { BootScreen, type BootMode } from './boot/BootScreen';
+import type { AnimationClock } from './clock';
 import { DesktopIcons, type DesktopIcon } from './desktop/DesktopIcons';
 import { Wallpaper } from './desktop/Wallpaper';
 import { MemoDialog } from './memo/MemoDialog';
@@ -163,6 +164,16 @@ function Desktop({ projects }: Props) {
   const [memo, setMemo] = useState<string | null>(null);
   const [reducedMotion] = useState(prefersReducedMotion);
   const [boot, setBoot] = useState<BootMode | null>(() => chooseBoot(settings));
+  const updateSettings = (patch: Partial<Settings>) =>
+    setSettings((s) => {
+      const next = { ...s, ...patch };
+      saveSettings(next);
+      return next;
+    });
+  const clock = useMemo<AnimationClock>(
+    () => ({ motion: !reducedMotion, cycling: !reducedMotion && settings.cycle }),
+    [reducedMotion, settings.cycle],
+  );
 
   const bootDone = (mode: BootMode) => {
     if (mode === 'full') {
@@ -277,7 +288,7 @@ function Desktop({ projects }: Props) {
               onClose={() => close(w.key)}
               onRect={(rect) => dispatch({ type: 'rect', key: w.key, rect })}
             >
-              <App args={w.args} open={open} memo={setMemo} settings={settings} />
+              <App args={w.args} open={open} memo={setMemo} settings={settings} updateSettings={updateSettings} clock={clock} />
             </Window>
           );
         })}

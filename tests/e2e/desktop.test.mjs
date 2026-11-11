@@ -75,8 +75,8 @@ try {
   check('memo focuses Acknowledge', (await b.eval(`document.activeElement?.textContent`)) === 'Acknowledge');
   await b.keys(['']); await b.wait(100);
   check('Escape closes memo', await b.eval(`!document.querySelector('.hs-memo')`));
-  ic = await icon('boardd'); await b.click(ic.x, ic.y); await b.wait(150);
-  check('unbuilt app shows awaiting-approval memo', (await b.eval(`document.querySelector('.hs-memo p')?.textContent`))?.includes('next quarter'));
+  ic = await icon('terminal'); await b.click(ic.x, ic.y); await b.wait(150);
+  check('unbuilt app shows awaiting-approval memo', (await b.eval(`document.querySelector('.hs-memo p')?.textContent`))?.includes('restored from tape'));
   await b.eval(`document.querySelector('.hs-memo button').click()`);
   ic = await icon('divisions/'); await b.click(ic.x, ic.y); await b.wait(150);
   check('divisions/ icon focuses existing window (singleton)', (await wins()).filter((x) => x.t === '/srv/divisions/').length === 1 && top(await wins()).t === '/srv/divisions/');
@@ -86,8 +86,8 @@ try {
   check('link in window opens dossier in a window', !!find(await wins(), 'dx-garden/DOSSIER'));
   check('URL follows the new window', (await b.eval('location.pathname')) === '/srv/divisions/signals/dx-garden/');
   await b.eval(`document.querySelectorAll('.hs-win').forEach(w => { if (w.querySelector('.hs-tb-title').textContent.includes('WELCOME')) w.querySelector('button.hs-link[data-hsos-open="ledger"]').click(); })`); await b.wait(150);
-  check('hsos: app word in Welcome is a live button', (await b.eval(`document.querySelector('.hs-memo p')?.textContent`))?.includes('Ledger'));
-  await b.eval(`document.querySelector('.hs-memo button').click()`);
+  check('hsos: app word in Welcome is a live button', top(await wins()).t === '/var/lib/ledger/morale.csv');
+  await b.eval(`document.querySelectorAll('.hs-win').forEach(w => { if (w.querySelector('.hs-tb-title').textContent.includes('ledger')) w.querySelector('.hs-x').click(); })`); await b.wait(150);
 
   // Close
   const before = (await wins()).length;

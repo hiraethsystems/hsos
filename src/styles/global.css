@@ -489,9 +489,16 @@ a:hover {
 /* ---- WELCOME.dd masthead ----------------------------------------------------------------- */
 
 .masthead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   margin: 0 0 16px;
   padding: 10px 14px;
   background: var(--c-black);
+}
+.masthead-logo {
+  flex: none;
+  display: block;
 }
 .masthead-title {
   margin: 0;

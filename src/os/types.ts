@@ -4,6 +4,7 @@
  * dragging, resizing, scrolling and focus.
  */
 import type { JSX } from 'preact';
+import type { AnimationClock } from './clock';
 import type { TitleRampName } from './palette';
 import type { Settings } from './settings';
 import type { IconName } from './sprites/icons';
@@ -25,7 +26,11 @@ export interface AppProps {
   /** Show an HR memo. */
   memo: (text: string) => void;
   settings: Settings;
-  // Added in later phases, as the spec describes: vfs (Phase 5), clock (Phase 4 and 6).
+  /** Change some settings. The desktop saves them and every app sees the new values. */
+  updateSettings: (patch: Partial<Settings>) => void;
+  /** What the app may animate, for use with `useTick` from `clock.ts`. */
+  clock: AnimationClock;
+  // Added in Phase 5, as the spec describes: vfs.
 }
 
 /** The chrome of one window, which can depend on its arguments (one viewer, many pages). */

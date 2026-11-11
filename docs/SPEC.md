@@ -501,6 +501,33 @@ scrolling and focus. This is what keeps every future app looking like part of on
 - Disabled menu items stay focusable (`aria-disabled`) so their reason can be read.
 - Closing a window moves keyboard focus to the window now on top.
 
+### 12.2 Decided 1.1, as built in Phase 4
+
+- `AppProps` gains `updateSettings(patch)` (the desktop saves the change and every window sees
+  it) and `clock`, which says what an app may animate: `cycling` (palette rotation, off when
+  the Settings checkbox is off or reduced motion is asked for) and `motion` (any movement, off
+  under reduced motion). Apps call `useTick(...)` from `src/os/clock.ts` with whichever
+  applies. One shared timer, 160ms a tick, runs only while something listens and the tab is
+  visible.
+- **WELCOME.dd** stays a page viewer window on the real static page. The static page now has
+  the logo (drawn as SVG at build time, so it works without JavaScript) and the title letters
+  carry their starting step on the cycle ramp; the window moves them along it each tick.
+- **Divisions** and **Dossier** stay as page viewer windows on their static pages, which
+  already show everything 11.2 and 11.3 ask for. Small icons per project can come later.
+- **The Board**: the eye has a one pixel dark outline so the white of the eye shows on the
+  white window. The iris cycles only with colour cycling on; the blink (every 40 ticks) stops
+  only under reduced motion. The word list lives in `src/os/text/board-words.ts` so the
+  terminal can consult the Board without reaching into the app.
+- **Ledger**: new figures each time the window opens. The chart is decorative and the same
+  figures are in a hidden table for screen readers.
+- **Listening Post 7**: two signals key real Morse ("CQ CQ DE HSOS" and "HIRAETH"). The
+  waterfall moves whether or not colour cycling is on, as it is motion rather than palette
+  rotation, and under reduced motion it shows one still frame. It is scaled by whole numbers
+  only, so it does not always fill the window width.
+- **Workplace Settings**: wallpaper thumbnails are small copies of the real wallpapers, and the
+  chosen one is marked with `aria-pressed`. Under reduced motion the colour cycling checkbox
+  is shown off and disabled, with a note saying why.
+
 ## 13. Content model
 
 `src/content/projects/<slug>.md` frontmatter:

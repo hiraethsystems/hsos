@@ -355,6 +355,192 @@ html.hsos-shell body {
   font-size: var(--ui-size);
 }
 
+/* ---- Shared app pieces --------------------------------------------------------------------- */
+
+.hs-muted {
+  color: var(--c-muted);
+}
+.hs-app-heading {
+  margin: 0;
+  font: inherit;
+  color: var(--c-link);
+}
+.hs-btn:focus-visible,
+.hs-link:focus-visible,
+.hs-wp:focus-visible,
+.hs-chk input:focus-visible {
+  outline: 3px solid var(--c-highlight);
+  outline-offset: 2px;
+}
+
+/* ---- The Board (SPEC 11.4) ----------------------------------------------------------------- */
+
+.hs-board {
+  display: flex;
+  gap: 14px;
+  padding: 12px 14px;
+}
+.hs-board-eye {
+  flex: none;
+  margin-top: 6px;
+}
+.hs-board-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hs-board-directive {
+  min-height: 90px;
+  margin: 0;
+  font-size: 28px;
+  line-height: 30px;
+  color: var(--c-link);
+}
+.hs-board-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ---- Ledger (SPEC 11.6) -------------------------------------------------------------------- */
+
+.hs-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 16px;
+}
+.hs-ledger-chart,
+.hs-ledger-labels {
+  display: flex;
+  gap: 10px;
+  min-width: 380px;
+  padding: 0 8px;
+}
+.hs-ledger-chart {
+  align-items: flex-end;
+  height: 130px;
+  border-left: 2px solid var(--c-ink);
+  border-bottom: 2px solid var(--c-ink);
+  background: repeating-linear-gradient(0deg, var(--c-scroll-track) 0 1px, transparent 1px 26px);
+}
+.hs-ledger-bar {
+  flex: 1;
+  border: 1px solid var(--c-ink);
+  border-bottom: 0;
+}
+.hs-ledger-labels span {
+  flex: 1;
+  text-align: center;
+  color: var(--c-muted);
+}
+.hs-ledger-foot {
+  margin: 0;
+}
+
+/* ---- Workplace Settings (SPEC 11.7) -------------------------------------------------------- */
+
+.hs-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+}
+.hs-settings p {
+  margin: 0;
+}
+.hs-wp-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hs-wp {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 4px;
+  font: inherit;
+  color: var(--c-ink);
+  background: var(--c-paper);
+  border: 3px solid var(--c-paper-edge);
+  cursor: pointer;
+}
+.hs-wp[aria-pressed='true'] {
+  border-color: var(--c-accent);
+}
+.hs-wp:hover {
+  background: var(--c-highlight);
+}
+.hs-wp-thumb {
+  position: relative;
+  display: block;
+  height: 62px;
+  overflow: hidden;
+  border: 1px solid var(--c-ink);
+}
+.hs-wp-thumb .hs-sun {
+  width: 26%;
+}
+.hs-chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.hs-chk input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--c-accent);
+}
+.hs-chk input:disabled + * {
+  color: var(--c-muted);
+}
+.hs-chk-note {
+  margin-top: -6px !important;
+  padding-left: 26px;
+}
+
+/* ---- Listening Post 7 (SPEC 11.5) ---------------------------------------------------------- */
+
+.hs-lp {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px;
+}
+.hs-lp p {
+  margin: 0;
+}
+.hs-lp-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 14px;
+}
+.hs-lp-freq {
+  font-size: 28px;
+  line-height: 28px;
+  color: var(--c-link);
+}
+.hs-lp-note {
+  margin-left: auto;
+}
+.hs-lp-frame {
+  min-width: 0;
+}
+.hs-lp-waterfall {
+  border: 2px solid var(--c-ink);
+  background: var(--c-black);
+  box-sizing: content-box;
+}
+
 /* ---- HR memo (SPEC 11.9) ------------------------------------------------------------------- */
 
 .hs-modal-layer {
