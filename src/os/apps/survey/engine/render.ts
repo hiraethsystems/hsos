@@ -6,7 +6,8 @@
  */
 import { MATERIALS, shade } from './materials';
 import type { Frame } from './raster';
-import { groundHeight, isWater, materialFor, N, padAt, SEA, treeAt, vertex } from './terrain';
+import { bob, type Boat, type BoatKind } from './boats';
+import { groundHeight, isWater, materialFor, N, padAt, PAD_SIZE, SEA, treeAt, vertex } from './terrain';
 import { FOOT, upAxis, type World } from './world';
 
 type V3 = [number, number, number];
@@ -49,6 +50,131 @@ const SHIP_F: { v: [number, number, number]; trim: boolean }[] = [
   { v: [5, 4, 2], trim: true },
 ];
 const SHIP_MID: V3 = [0, 0.02, -0.08];
+
+/** One face of a model: three or four corners, a material, and the middle of its part. */
+interface Face {
+  pts: V3[];
+  mat: readonly number[];
+  /** The middle of the part it belongs to, so its outside can be told from its inside. */
+  c: V3;
+  /** Thin things (sails, masts) are seen from both sides. */
+  two?: boolean;
+}
+
+/** A boat hull: pointed bow, square stern, open deck. Local axes: x right, y up, z bow. */
+function hull(L: number, B: number, D: number, side: readonly number[], deck: readonly number[]): Face[] {
+  const c: V3 = [0, D / 2, 0];
+  const bow: V3 = [0, D * 1.25, L / 2];
+  const p1: V3 = [-B, D, 0];
+  const s1: V3 = [B, D, 0];
+  const p2: V3 = [-B * 0.85, D, -L / 2];
+  const s2: V3 = [B * 0.85, D, -L / 2];
+  const wb: V3 = [0, 0, L * 0.43];
+  const wp1: V3 = [-B * 0.8, 0, 0];
+  const ws1: V3 = [B * 0.8, 0, 0];
+  const wp2: V3 = [-B * 0.7, 0, -L * 0.47];
+  const ws2: V3 = [B * 0.7, 0, -L * 0.47];
+  return [
+    { pts: [bow, p1, wp1, wb], mat: side, c },
+    { pts: [bow, wb, ws1, s1], mat: side, c },
+    { pts: [p1, p2, wp2, wp1], mat: side, c },
+    { pts: [s1, ws1, ws2, s2], mat: side, c },
+    { pts: [p2, s2, ws2, wp2], mat: side, c },
+    { pts: [bow, s1, p1], mat: deck, c: [0, 0, 0] },
+    { pts: [p1, s1, s2, p2], mat: deck, c: [0, 0, 0] },
+  ];
+}
+
+/** A box with no bottom. */
+function box(x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, mat: readonly number[]): Face[] {
+  const c: V3 = [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2];
+  return [
+    { pts: [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], mat, c },
+    { pts: [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]], mat, c },
+    { pts: [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], mat, c },
+    { pts: [[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]], mat, c },
+    { pts: [[x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0]], mat, c },
+  ];
+}
+
+/** A thin upright pole, as two crossed planes. */
+function pole(x: number, z: number, y0: number, y1: number, r: number, mat: readonly number[]): Face[] {
+  const c: V3 = [x, (y0 + y1) / 2, z];
+  return [
+    { pts: [[x - r, y0, z], [x + r, y0, z], [x + r, y1, z], [x - r, y1, z]], mat, c, two: true },
+    { pts: [[x, y0, z - r], [x, y0, z + r], [x, y1, z + r], [x, y1, z - r]], mat, c, two: true },
+  ];
+}
+
+const BOAT_MODELS: Record<BoatKind, Face[]> = {
+  // A rowing dinghy with someone from Accounts at the oars.
+  dinghy: [
+    ...hull(0.46, 0.12, 0.06, MATERIALS.wood, MATERIALS.wood),
+    ...box(-0.035, 0.035, 0.06, 0.15, -0.04, 0.02, MATERIALS.sail),
+    { pts: [[-0.2, 0.07, -0.02], [0.2, 0.07, -0.02], [0.2, 0.07, 0.02], [-0.2, 0.07, 0.02]], mat: MATERIALS.wood, c: [0, 0, 0], two: true },
+  ],
+  // A sailing boat flying company red.
+  sail: [
+    ...hull(0.7, 0.14, 0.07, MATERIALS.canvas, MATERIALS.wood),
+    ...pole(0, 0.06, 0.07, 0.69, 0.012, MATERIALS.wood),
+    { pts: [[0.01, 0.67, 0.05], [0.01, 0.15, 0.05], [0.11, 0.15, -0.3]], mat: MATERIALS.sail, c: [0, 0.3, 0], two: true },
+    { pts: [[0.01, 0.57, 0.08], [0.01, 0.12, 0.34], [0.07, 0.12, 0.1]], mat: MATERIALS.canvas, c: [0, 0.3, 0], two: true },
+  ],
+  // A tug: red hull, white wheelhouse, yellow funnel with a black top.
+  tug: [
+    ...hull(0.8, 0.18, 0.09, MATERIALS.sail, MATERIALS.tarmac),
+    ...box(-0.11, 0.11, 0.09, 0.24, -0.1, 0.14, MATERIALS.canvas),
+    ...box(-0.045, 0.045, 0.09, 0.29, -0.25, -0.15, MATERIALS.funnel),
+    ...box(-0.045, 0.045, 0.29, 0.34, -0.25, -0.15, [MATERIALS.shadow, MATERIALS.hull[0]!]),
+  ],
+};
+
+/**
+ * Landing pad markings, in pad coordinates (u east, v north, 0 to PAD_SIZE): yellow and black
+ * hazard stripes round the edge and the pad's letter painted large in the middle.
+ */
+interface Mark {
+  u0: number;
+  v0: number;
+  u1: number;
+  v1: number;
+  slot: number;
+}
+const LETTERS = [
+  ['.#.', '#.#', '###', '#.#', '#.#'],
+  ['##.', '#.#', '##.', '#.#', '##.'],
+  ['.##', '#..', '#..', '#..', '.##'],
+];
+const PAD_MARKS: Mark[][] = LETTERS.map((rows) => {
+  const marks: Mark[] = [];
+  const P = PAD_SIZE;
+  const bw = 0.2;
+  const seg = P / 8;
+  for (let k = 0; k < 8; k++) {
+    const slot = MATERIALS.hazard[k & 1]!;
+    marks.push({ u0: k * seg, v0: 0, u1: (k + 1) * seg, v1: bw, slot });
+    marks.push({ u0: k * seg, v0: P - bw, u1: (k + 1) * seg, v1: P, slot: MATERIALS.hazard[(k + 1) & 1]! });
+    marks.push({ u0: 0, v0: k * seg, u1: bw, v1: (k + 1) * seg, slot });
+    marks.push({ u0: P - bw, v0: k * seg, u1: P, v1: (k + 1) * seg, slot: MATERIALS.hazard[(k + 1) & 1]! });
+  }
+  const cell = 0.3;
+  const left = P / 2 - cell * 1.5;
+  const top = P / 2 + cell * 2.5;
+  rows.forEach((row, r) => {
+    for (let k = 0; k < 3; k++) {
+      if (row[k] !== '#') continue;
+      marks.push({ u0: left + k * cell, v0: top - (r + 1) * cell, u1: left + (k + 1) * cell, v1: top - r * cell, slot: MATERIALS.marking[1]! });
+    }
+  });
+  return marks;
+});
+/** Lamps at the pad's corners, in pad coordinates. */
+const PAD_LAMPS: [number, number][] = [
+  [0.1, 0.1],
+  [PAD_SIZE - 0.1, 0.1],
+  [0.1, PAD_SIZE - 0.1],
+  [PAD_SIZE - 0.1, PAD_SIZE - 0.1],
+];
 
 /** Draw distance in tiles ahead of the camera, and the view's focal length (per pixel row). */
 const DEPTH = 30;
@@ -124,6 +250,13 @@ export function render(f: Frame, w: World, cam: Camera): void {
   const j1 = Math.floor(cam.z + DEPTH);
   const t = w.terrain;
 
+  // Boats, filed by the row they sit in, so each is drawn in among the land like the trees.
+  const boatRows = new Map<number, Boat[]>();
+  for (const b of w.boats) {
+    const row = Math.floor(near(b.z, cam.z));
+    boatRows.set(row, [...(boatRows.get(row) ?? []), b]);
+  }
+
   for (let j = j1; j >= j0; j--) {
     // How far away this row's ground roughly is, to know how wide it spreads on screen.
     const rowDepth = Math.max(1, (j - cam.z) * cp + cam.y * sp);
@@ -147,10 +280,9 @@ export function render(f: Frame, w: World, cam: Camera): void {
         tri(a, d, c, slot);
         continue;
       }
-      if (padAt(t, i, j)) {
-        const slot = MATERIALS.pad[parity]!;
-        tri(a, b, d, slot);
-        tri(a, d, c, slot);
+      const pad = padAt(t, i, j);
+      if (pad) {
+        drawPadTile(pad - 1, i, j, h00, parity);
         continue;
       }
       const avg = (h00 + h10 + h01 + h11) / 4;
@@ -163,10 +295,86 @@ export function render(f: Frame, w: World, cam: Camera): void {
     for (let i = i0; i <= i1; i++) {
       const tree = treeAt(t, i, j);
       if (tree) drawTree(i + (tree.x - Math.floor(tree.x)), tree.y, j + (tree.z - Math.floor(tree.z)), tree.height);
+      const pad = padAt(t, i, j);
+      if (pad) drawPadLamps(pad - 1, i, j, vertex(t, i, j));
     }
+    for (const b of boatRows.get(j) ?? []) drawBoat(b);
     if (j === shipRow) drawShip(sx, sz);
   }
   if (shipRow < j0 || shipRow > j1) drawShip(sx, sz);
+
+  /** A pad tile: tarmac, then whichever of the pad's markings fall on this tile. */
+  function drawPadTile(k: number, i: number, j: number, h: number, parity: number) {
+    const p = t.padList[k]!;
+    const du = (((i - p.i) % N) + N) % N;
+    const dv = (((j - p.j) % N) + N) % N;
+    const slot = MATERIALS.tarmac[1 + parity]!;
+    tri([i, h, j], [i + 1, h, j], [i + 1, h, j + 1], slot);
+    tri([i, h, j], [i + 1, h, j + 1], [i, h, j + 1], slot);
+    for (const m of PAD_MARKS[k % PAD_MARKS.length]!) {
+      const u0 = Math.max(m.u0, du);
+      const u1 = Math.min(m.u1, du + 1);
+      const v0 = Math.max(m.v0, dv);
+      const v1 = Math.min(m.v1, dv + 1);
+      if (u1 <= u0 || v1 <= v0) continue;
+      const x0 = i + u0 - du;
+      const x1 = i + u1 - du;
+      const z0 = j + v0 - dv;
+      const z1 = j + v1 - dv;
+      tri([x0, h, z0], [x1, h, z0], [x1, h, z1], m.slot);
+      tri([x0, h, z0], [x1, h, z1], [x0, h, z1], m.slot);
+    }
+  }
+
+  /** The pad's corner lamps that stand on this tile: a short post with a green light on top. */
+  function drawPadLamps(k: number, i: number, j: number, h: number) {
+    const p = t.padList[k]!;
+    const du = (((i - p.i) % N) + N) % N;
+    const dv = (((j - p.j) % N) + N) % N;
+    for (const [u, v] of PAD_LAMPS) {
+      if (Math.floor(u) !== du || Math.floor(v) !== dv) continue;
+      const x = i + u - du;
+      const z = j + v - dv;
+      const post = MATERIALS.hull[0]!;
+      tri([x - 0.02, h, z], [x + 0.02, h, z], [x + 0.02, h + 0.12, z], post);
+      tri([x - 0.02, h, z], [x + 0.02, h + 0.12, z], [x - 0.02, h + 0.12, z], post);
+      const lamp = MATERIALS.lamp[1]!;
+      tri([x - 0.045, h + 0.1, z], [x + 0.045, h + 0.1, z], [x + 0.045, h + 0.18, z], lamp);
+      tri([x - 0.045, h + 0.1, z], [x + 0.045, h + 0.18, z], [x - 0.045, h + 0.18, z], lamp);
+    }
+  }
+
+  /** A boat, turned to its heading and riding the swell. Faces go far to near. */
+  function drawBoat(b: Boat) {
+    const bx = near(b.x, cam.x);
+    const bz = near(b.z, cam.z);
+    const by = bob(b, w.time);
+    const ch = Math.cos(b.heading);
+    const sh = Math.sin(b.heading);
+    const place = (v: V3): V3 => [bx + v[0] * ch + v[2] * sh, by + v[1], bz - v[0] * sh + v[2] * ch];
+    const eye: V3 = [cam.x, cam.y, cam.z];
+    const faces: { pts: V3[]; slot: number; depth: number }[] = [];
+    for (const face of BOAT_MODELS[b.kind]) {
+      const pts = face.pts.map(place);
+      const c = place(face.c);
+      const mid: V3 = [0, 0, 0];
+      for (const q of pts) for (let k = 0; k < 3; k++) mid[k] += q[k]! / pts.length;
+      let n = cross(sub(pts[1]!, pts[0]!), sub(pts[2]!, pts[0]!));
+      if (dot(n, sub(mid, c)) < 0) n = [-n[0], -n[1], -n[2]];
+      const toEye = sub(eye, mid);
+      if (dot(n, toEye) <= 0) {
+        if (!face.two) continue;
+        n = [-n[0], -n[1], -n[2]];
+      }
+      const depth = (mid[2] - cam.z) * cp - (mid[1] - cam.y) * sp;
+      faces.push({ pts, slot: shade(face.mat, lit(n)), depth });
+    }
+    faces.sort((m, k) => k.depth - m.depth);
+    for (const f of faces) {
+      tri(f.pts[0]!, f.pts[1]!, f.pts[2]!, f.slot);
+      if (f.pts.length === 4) tri(f.pts[0]!, f.pts[2]!, f.pts[3]!, f.slot);
+    }
+  }
 
   /** A tree: a short trunk under a four sided canopy, lit face by face. */
   function drawTree(x: number, y: number, z: number, h: number) {

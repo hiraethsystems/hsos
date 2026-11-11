@@ -474,7 +474,16 @@ own tilt over a 3D landscape of flat shaded tiles, with gravity, momentum and fu
   Pads never sit in or by water, and the water settles after the pads are laid. A crash keeps the same
   estate; "New estate" on the pause card makes another. Pads refuel the drone; landing
   anywhere else is allowed if it is gentle, level and on even ground. Water (sea or lake) is
-  always a crash, and so is flying into a tree. A crash issues a replacement drone at Pad A.
+  always a crash, and so is flying into a tree or a boat. A crash issues a replacement drone
+  at Pad A.
+- **Landing pads** look like landing pads (owner's request): dark tarmac, yellow and black
+  hazard stripes round the edge, the pad's letter (A, B or C) painted large in white, and a
+  green lamp on a post at each corner. They stay yellow on the minimap.
+- **Boats** potter about on the sea (owner's request), never on lakes: roughly one per hundred
+  sea tiles, at most ten. Three kinds: a wooden rowing dinghy, a sailing boat with a company
+  red sail, and a tug with a red hull, white wheelhouse and yellow funnel. They drift slowly,
+  bob on the swell, wander now and then, and turn away before they run aground. They only move
+  while the game runs, and they are not on the minimap.
 - A **minimap** sits in the top left of the view (owner's request): the whole estate, one
   pixel per tile (two on big views), north up and centred on the drone, drawn into the same
   framebuffer. Pads are yellow, woods dark green, the drone a white cross.

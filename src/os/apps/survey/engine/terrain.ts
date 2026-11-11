@@ -43,7 +43,7 @@ function noise(x: number, z: number, cell: number, seed: number): number {
 }
 
 /** A small seeded random number source, for placing things. */
-function rng(seed: number): () => number {
+export function rng(seed: number): () => number {
   let a = seed >>> 0 || 1;
   return () => {
     a = (a + 0x6d2b79f5) | 0;
@@ -231,7 +231,7 @@ export function buildTerrain(seed: number): Terrain {
     for (let i = 0; i < N; i++) {
       const t = idx(i, j);
       let slot: number;
-      if (pads[t]) slot = MATERIALS.pad[1]!;
+      if (pads[t]) slot = MATERIALS.hazard[0]!;
       else if (water[t]) slot = MATERIALS.sea[heights[t]! > SEA ? 5 : 3]!;
       else if (trees[t]) slot = MATERIALS.grass[0]!;
       else slot = shade(materialFor((vertex(i, j) + vertex(i + 1, j) + vertex(i, j + 1) + vertex(i + 1, j + 1)) / 4), 0.6);

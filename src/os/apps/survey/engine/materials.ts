@@ -16,7 +16,16 @@ export const MATERIALS = {
   snow: refs('paper-edge', 'scroll-track', 'white'),
   /** Listening Post teals, then the Ledger's Q5 blues. */
   sea: [...RAMP.listening, ...rev(RAMP['ledger-q5'])],
-  pad: refs('button-hover.1', 'highlight'),
+  /** Landing pads: tarmac, hazard stripes round the edge, a white letter, green edge lamps. */
+  tarmac: [...RAMP.terminal],
+  hazard: refs('highlight', 'black'),
+  marking: refs('paper-edge', 'white'),
+  lamp: refs('boot-ok', 'light-green'),
+  /** Boats: varnished wood, company sails, a tug's red hull and yellow funnel. */
+  wood: [...RAMP.ledger],
+  sail: [...RAMP.hr],
+  canvas: refs('paper-edge', 'scroll-track', 'white'),
+  funnel: [...RAMP['ledger-q3']].reverse(),
   /** Woods: the darkest greens, so trees stand out from the grass. */
   canopy: [...RAMP.files, RAMP['ledger-q4'][3]!],
   trunk: refIndex('brown'),

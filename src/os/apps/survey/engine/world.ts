@@ -5,7 +5,8 @@
  *
  * Input is a tilt vector: x is east, z is north (away from the camera), length 0 to 1.
  */
-import { groundHeight, isWater, N, padAt, PAD_SIZE, tileRoughness, treeAt, type Terrain } from './terrain';
+import { BOAT_SIZE, bob, placeBoats, stepBoats, type Boat } from './boats';
+import { groundHeight, isWater, N, padAt, PAD_SIZE, rng, tileRoughness, treeAt, type Terrain } from './terrain';
 
 export const GRAVITY = 4;
 export const THRUST = 10;
@@ -24,6 +25,7 @@ export const SAFE = { fall: 2.4, slide: 1.8, tilt: 0.42, rough: 0.3 };
 const RESPAWN_AFTER = 1.8;
 
 export type Status = 'landed' | 'flying' | 'crashed';
+export type Cause = 'impact' | 'water' | 'tree' | 'boat';
 
 export interface Particle {
   x: number;
@@ -61,7 +63,7 @@ export interface Ship {
 /** Something worth telling the player. */
 export type FlightEvent =
   | { type: 'landed'; pad: string | null }
-  | { type: 'crashed'; cause: 'impact' | 'water' | 'tree' }
+  | { type: 'crashed'; cause: Cause }
   | { type: 'respawned' }
   | { type: 'refuelled' }
   | { type: 'empty' };
@@ -69,6 +71,7 @@ export type FlightEvent =
 export interface World {
   terrain: Terrain;
   ship: Ship;
+  boats: Boat[];
   particles: Particle[];
   time: number;
 }
@@ -96,7 +99,7 @@ function freshShip(t: Terrain): Ship {
 }
 
 export function newWorld(terrain: Terrain): World {
-  return { terrain, ship: freshShip(terrain), particles: [], time: 0 };
+  return { terrain, ship: freshShip(terrain), boats: placeBoats(terrain, rng(terrain.seed ^ 0x5eaf00d)), particles: [], time: 0 };
 }
 
 /** The ship's up axis for a tilt. */
@@ -153,6 +156,7 @@ export function step(w: World, dt: number, tilt: { x: number; z: number }, thrus
     }
   }
   w.particles = w.particles.filter((p) => p.life > 0);
+  stepBoats(w.boats, t, dt);
 
   if (s.status === 'crashed') {
     s.wreck += dt;
@@ -238,6 +242,17 @@ export function step(w: World, dt: number, tilt: { x: number; z: number }, thrus
     }
   }
 
+  // Boats: the same, against each boat's hull and mast.
+  for (const b of w.boats) {
+    const dx = s.x - (b.x + Math.round((s.x - b.x) / N) * N);
+    const dz = s.z - (b.z + Math.round((s.z - b.z) / N) * N);
+    const size = BOAT_SIZE[b.kind];
+    if (Math.hypot(dx, dz) < size.r + 0.15 && s.y - FOOT < bob(b, w.time) + size.top) {
+      crash(w, 'boat', events);
+      return;
+    }
+  }
+
   const g = groundHeight(t, s.x, s.z);
   if (s.y - FOOT > g) return;
 
@@ -261,7 +276,7 @@ export function step(w: World, dt: number, tilt: { x: number; z: number }, thrus
   events.push({ type: 'landed', pad: pad ? t.padList[pad - 1]!.name : null });
 }
 
-function crash(w: World, cause: 'impact' | 'water' | 'tree', events: FlightEvent[]): void {
+function crash(w: World, cause: Cause, events: FlightEvent[]): void {
   const s = w.ship;
   s.status = 'crashed';
   s.wreck = 0;

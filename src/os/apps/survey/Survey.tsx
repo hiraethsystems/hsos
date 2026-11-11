@@ -43,7 +43,9 @@ const MESSAGES: Record<FlightEvent['type'], (e: FlightEvent) => string> = {
         ? 'Lost in the water. Water is not on the asset register.'
         : e.cause === 'tree'
           ? 'Crashed into a tree. The tree has been asked to submit a statement.'
-          : 'Crashed. Damage has been billed to your department.',
+          : e.cause === 'boat'
+            ? 'Hit a boat. Marine Division has opened a ticket.'
+            : 'Crashed. Damage has been billed to your department.',
   respawned: () => 'A replacement drone has been issued from Pad A.',
   refuelled: () => 'Tank full. Try to bring it back this time.',
   empty: () => 'Fuel exhausted. Gravity has taken over the project.',
