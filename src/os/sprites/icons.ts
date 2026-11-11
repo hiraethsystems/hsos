@@ -194,9 +194,10 @@ const bin = spriteFromArt(
  * The Hiraeth Systems logo, 32 by 32: an enso (one open brush circle) in white ink, with a sea
  * wave breaking inside it. The brush lands in a round blot at the top, runs anticlockwise,
  * heavy down the left, then thins and splits into dry bristle streaks (G) before it lifts at
- * the upper right. The wave uses the wave ramp, crest to trough, with white foam.
+ * the upper right. The wave uses the wave ramp, crest to trough, its foam drawn in the same ink.
+ * Ink (W) is black on light backgrounds (the WELCOME.dd masthead) and white on dark ones (boot).
  */
-const LOGO_ART = spriteFromArt(
+const logo = (ink: 'black' | 'white') => spriteFromArt(
   [
     '.............WWWW...............',
     '..........WWWWWWWWWWW...........',
@@ -232,7 +233,7 @@ const LOGO_ART = spriteFromArt(
     '...............WWWW.............',
   ],
   {
-    W: 'white',
+    W: ink,
     G: 'light-grey',
     A: 'wave.0',
     B: 'wave.1',
@@ -243,5 +244,8 @@ const LOGO_ART = spriteFromArt(
 
 export const ICONS = { folder, eye, waterfall, ledger, survey, terminal, gear, bin } as const;
 export type IconName = keyof typeof ICONS;
-export const LOGO = LOGO_ART;
+/** Black ink, for light backgrounds. */
+export const LOGO = logo('black');
+/** White ink, for dark backgrounds. */
+export const LOGO_ON_DARK = logo('white');
 

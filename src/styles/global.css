@@ -522,7 +522,8 @@ a:hover {
   gap: 14px;
   margin: 0 0 16px;
   padding: 10px 14px;
-  background: var(--c-black);
+  background: var(--c-white);
+  border: 2px solid var(--c-black);
 }
 .masthead-logo {
   flex: none;

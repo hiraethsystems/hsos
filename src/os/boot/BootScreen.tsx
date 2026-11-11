@@ -4,7 +4,7 @@
  * final screen is shown at once, without animation. Any key or click skips.
  */
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { LOGO } from '../sprites/icons';
+import { LOGO_ON_DARK } from '../sprites/icons';
 import { SpriteCanvas } from '../sprites/SpriteCanvas';
 import { BIOS_HEADER, FULL_BOOT, HOLD_MS, LINE_MS, SHORT_BOOT, SHORT_MS, STATUS_TAG, STILL_MS } from './script';
 
@@ -62,7 +62,7 @@ export function BootScreen({ mode, reducedMotion, onDone }: Props) {
     <div class="hs-boot" role="dialog" aria-modal="true" aria-label="HSOS is starting" onPointerDown={finish}>
       <p class="visually-hidden">HSOS is starting. Press any key or click to skip.</p>
       <div class="hs-boot-head" aria-hidden="true">
-        <SpriteCanvas sprite={LOGO} scale={3} />
+        <SpriteCanvas sprite={LOGO_ON_DARK} scale={3} />
         <div>
           <div class="hs-boot-bios">{bios}</div>
           <div>{copyright}</div>
