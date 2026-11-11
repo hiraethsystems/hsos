@@ -230,8 +230,8 @@ dark bottom-right border), lilac checkered track, bevelled arrow buttons. Use
 - Logo: 32x32, drawn at 3x. An enso brush circle in black ink on the white masthead, white ink
   on the black boot screen,
   thin, landing in a round blot at the top, heaviest down the left, splitting into two bristle
-  lines along the bottom right before it lifts at the upper right, with a sea wave in the wave ramp
-  filling the inside of the circle without touching the stroke. Replaced the prototype's sliced sun diamond in November 2026.
+  lines along the bottom right before it lifts at the upper right, framing a sea wave in the wave ramp:
+  the water runs right up to the inside of the stroke, with no gap. Replaced the prototype's sliced sun diamond in November 2026.
 - From the prototype: 14x9 Board eye whose iris colour cycles and which blinks every few
   seconds.
 - Graphics are allowed and encouraged (charts, waterfall, icons), always within the palette.
