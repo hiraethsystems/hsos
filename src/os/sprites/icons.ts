@@ -1,10 +1,10 @@
 /**
  * Desktop icons and the logo. Each icon is 16 by 16 pixels, drawn at 3x on the desktop.
+ * The logo is 24 by 24, drawn at 3x.
  * Edit the art by hand: one character per pixel, `.` is transparent, the legend says which
  * palette colour each letter is. Shading uses stepped bands, never blends.
  */
-import { refIndex } from '../palette';
-import { spriteFromArt, type Sprite } from './sprite';
+import { spriteFromArt } from './sprite';
 
 /** divisions/ : a manila folder in four stepped bands. */
 const folder = spriteFromArt(
@@ -191,28 +191,49 @@ const bin = spriteFromArt(
 );
 
 /**
- * The Hiraeth Systems logo: a sliced sun inside a diamond, 16 by 16. Built by rule rather than
- * drawn, as in the prototype: bands of the logo ramp top to bottom, the lower half sliced.
+ * The Hiraeth Systems logo, 24 by 24: an enso (one open brush circle) with a sea wave breaking
+ * inside it. Drawn by hand. The stroke lands heavy at the top, runs anticlockwise and lifts
+ * thin at the upper right, stepping through the logo ramp as it goes (digits 0 to 8). The wave
+ * uses the wave ramp, crest to trough, with white foam.
  */
-function buildLogo(): Sprite {
-  const pixels: (number | null)[] = [];
-  const edge = refIndex('docs.3');
-  for (let y = 0; y < 16; y++) {
-    for (let x = 0; x < 16; x++) {
-      const d = Math.abs(x - 7.5) + Math.abs(y - 7.5);
-      let slot: number | null = null;
-      if (d <= 8) {
-        slot = refIndex(`logo.${Math.min(8, Math.floor(y / 2))}`);
-        if (y >= 9 && y % 2 === 0) slot = null;
-        if (d > 7.2) slot = edge;
-      }
-      pixels.push(slot);
-    }
-  }
-  return { w: 16, h: 16, pixels };
-}
+const LOGO_ART = spriteFromArt(
+  [
+    '.........0000...........',
+    '.......110000000........',
+    '.....1111000000000......',
+    '....111111000000000.....',
+    '...2211111.0000000......',
+    '..222211.....000........',
+    '..22222.................',
+    '.22222.......WWWWW......',
+    '.22222.....WWAAAAAW...8.',
+    '.2222.....WAABBBBAW...8.',
+    '33333....WABB....BB...88',
+    '33333....WAB.WW..BB...88',
+    '33333.....W.WAB..BB...88',
+    '33333......WAB..BBC..888',
+    '.3333.......B..BBCC..78.',
+    '.33344.......BBBCCC.777.',
+    '.3444.....WWBBCCCCD.777.',
+    '..444...WWBBCCCDDDD.77..',
+    '..4444.WWBBCCDDDDD.777..',
+    '...44444555.....66777...',
+    '....4445555556666667....',
+    '.....45555555666666.....',
+    '.......5555556666.......',
+    '..........5556..........',
+  ],
+  {
+    ...Object.fromEntries([...'012345678'].map((d) => [d, `logo.${d}` as const])),
+    W: 'white',
+    A: 'wave.0',
+    B: 'wave.1',
+    C: 'wave.2',
+    D: 'wave.3',
+  },
+);
 
 export const ICONS = { folder, eye, waterfall, ledger, survey, terminal, gear, bin } as const;
 export type IconName = keyof typeof ICONS;
-export const LOGO = buildLogo();
+export const LOGO = LOGO_ART;
 

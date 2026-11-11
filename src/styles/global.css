@@ -528,15 +528,19 @@ a:hover {
   flex: none;
   display: block;
 }
+/* The title fills whatever width the box leaves beside the logo. The pixel font advances 0.4em
+   per character, so the 15 characters of HIRAETH SYSTEMS are 6em wide. */
+.masthead-text {
+  flex: 1;
+  min-width: 0;
+  container-type: inline-size;
+}
 .masthead-title {
   margin: 0;
   font-size: 40px;
-  line-height: 40px;
-  white-space: pre-wrap;
-}
-.masthead-tagline {
-  margin: 4px 0 0;
-  color: var(--c-term-prompt);
+  font-size: calc(100cqi / 6);
+  line-height: 1;
+  white-space: pre;
 }
 
 /* ---- Directory listing ------------------------------------------------------------------- */

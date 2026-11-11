@@ -227,8 +227,11 @@ dark bottom-right border), lilac checkered track, bevelled arrow buttons. Use
 - Sprites are defined as arrays of palette indices (or palette names) and drawn to `<canvas>`
   with `image-rendering: pixelated`, or as CSS grids for tiny ones. Keep them crisp: integer
   scaling only.
-- Existing sprites from the prototype: 16x16 sliced sun diamond logo; 14x9 Board eye whose
-  iris colour cycles and which blinks every few seconds.
+- Logo: 24x24, drawn at 3x (masthead and boot screen). An enso brush circle in the logo ramp,
+  landing heavy at the top and lifting thin at the upper right, with a sea wave breaking
+  inside it in the wave ramp. Replaced the prototype's sliced sun diamond in November 2026.
+- From the prototype: 14x9 Board eye whose iris colour cycles and which blinks every few
+  seconds.
 - Graphics are allowed and encouraged (charts, waterfall, icons), always within the palette.
 
 ### 4.6 Palette animation (colour cycling)
@@ -792,8 +795,8 @@ Capitalisation is part of the effect: mixed upper and lower case words.
 
 **Welcome copy**: lives in `src/content/pages/welcome.md` and no longer follows the prototype.
 Rewritten in November 2026 to be flatter and more procedural: plain manual language with the
-odd dry line, rather than a punchline on every line. Masthead tagline: "Workplace Operating
-Environment. Authorised personnel only."
+odd dry line, rather than a punchline on every line. The masthead has no tagline: just the
+logo and HIRAETH SYSTEMS, sized to fill the width of the black box.
 
 **Bilingual (later)**: Cymraeg and English toggle. Any Welsh must be checked by a fluent
 speaker before going live.

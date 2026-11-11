@@ -62,7 +62,7 @@ export function BootScreen({ mode, reducedMotion, onDone }: Props) {
     <div class="hs-boot" role="dialog" aria-modal="true" aria-label="HSOS is starting" onPointerDown={finish}>
       <p class="visually-hidden">HSOS is starting. Press any key or click to skip.</p>
       <div class="hs-boot-head" aria-hidden="true">
-        <SpriteCanvas sprite={LOGO} scale={4} />
+        <SpriteCanvas sprite={LOGO} scale={3} />
         <div>
           <div class="hs-boot-bios">{bios}</div>
           <div>{copyright}</div>

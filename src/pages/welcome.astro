@@ -18,12 +18,11 @@ const letters = [...'HIRAETH SYSTEMS'].map((ch, i) => ({ ch, step: i % steps }))
 
 <Document title={page.data.title} path={vfsPath.welcome} section="welcome" description={page.data.summary}>
   <div class="masthead">
-    <SpriteSvg sprite={LOGO} scale={4} class="masthead-logo" />
-    <div>
+    <SpriteSvg sprite={LOGO} scale={3} class="masthead-logo" />
+    <div class="masthead-text">
       <p class="masthead-title" aria-hidden="true">
         {letters.map((l) => <span data-cycle={l.step} style={`color: var(--ramp-cycle-${l.step})`}>{l.ch}</span>)}
       </p>
-      <p class="masthead-tagline">Workplace Operating Environment. Authorised personnel only.</p>
     </div>
   </div>
   <div class="prose">
