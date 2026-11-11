@@ -1,8 +1,13 @@
 /**
- * The four wallpapers (SPEC 4.7), all stepped bands from the palette. Colour cycling of the
- * sun and grid arrives with the shared clock in Phase 6; `phase` is ready for it.
+ * The four wallpapers (SPEC 4.7), all stepped bands from the palette. With colour cycling on,
+ * the sun's bands roll and the grid lines step through the grid ramp (SPEC 4.6), every third
+ * tick of the shared clock. Both are palette rotation: only which ramp step is used changes.
  */
+import { useTick } from '../clock';
+import { RAMP } from '../palette';
 import type { WallpaperId } from '../settings';
+
+const SLOW = 3;
 
 /** The sliced sun: ten bands, the lower five cut by widening gaps. */
 export function sunBands(phase = 0): string {
@@ -20,14 +25,16 @@ export function sunBands(phase = 0): string {
   return `linear-gradient(180deg, ${parts.join(', ')})`;
 }
 
-export function Wallpaper({ id, phase = 0 }: { id: WallpaperId; phase?: number }) {
+export function Wallpaper({ id, cycling = false }: { id: WallpaperId; cycling?: boolean }) {
+  const tick = useTick(cycling && id === 'sunset');
+  const phase = cycling ? Math.floor(tick / SLOW) : 0;
   if (id === 'sunset') {
     return (
       <div class="hs-wall hs-wall-sunset" aria-hidden="true">
         <div class="hs-sky" />
         <div class="hs-sun" style={{ background: sunBands(phase) }} />
         <div class="hs-mountains" />
-        <div class="hs-floor" />
+        <div class="hs-floor" style={{ '--grid-line': `var(--ramp-grid-${phase % RAMP.grid.length})` }} />
       </div>
     );
   }

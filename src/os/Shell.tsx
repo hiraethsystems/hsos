@@ -291,7 +291,7 @@ function Desktop({ projects, memos }: Props) {
   return (
     <>
     <div class="hs-shell" inert={boot !== null}>
-      <Wallpaper id={settings.wallpaper} />
+      <Wallpaper id={settings.wallpaper} cycling={clock.cycling} />
       <MenuBar menus={menus} />
       <div class="hs-windows">
         {wm.wins.map((w) => {

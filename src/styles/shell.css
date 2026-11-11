@@ -64,13 +64,14 @@ html.hsos-shell body {
   clip-path: polygon(0 100%, 0 60%, 8% 30%, 16% 55%, 26% 10%, 36% 50%, 44% 35%, 52% 70%, 62% 25%, 72% 55%, 82% 15%, 92% 45%, 100% 30%, 100% 100%);
 }
 .hs-floor {
+  --grid-line: var(--ramp-grid-0);
   position: absolute;
   inset: 65% 0 0 0;
   background-color: var(--c-desktop);
   background-image:
-    repeating-linear-gradient(0deg, var(--ramp-grid-0) 0 2px, transparent 2px 34px),
-    repeating-linear-gradient(90deg, var(--ramp-grid-0) 0 2px, transparent 2px 90px);
-  border-top: 3px solid var(--ramp-grid-0);
+    repeating-linear-gradient(0deg, var(--grid-line) 0 2px, transparent 2px 34px),
+    repeating-linear-gradient(90deg, var(--grid-line) 0 2px, transparent 2px 90px);
+  border-top: 3px solid var(--grid-line);
 }
 .hs-wall-corporate {
   background-color: var(--c-corporate-a);
