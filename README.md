@@ -62,25 +62,20 @@ Do these when the site is ready. Nothing here touches the Ghost site.
    sudo mkdir -p /var/www/hiraeth.systems
    sudo chown ubuntu:ubuntu /var/www/hiraeth.systems
    ```
-3. **nginx** (done 10 November 2026, stage 1): `deploy/nginx/hiraeth.systems.stage1-http.conf` is
-   what is installed now, plain HTTP. Stage 2 is the full file below, once the certificate exists.
-   Originally: copy `deploy/nginx/hiraeth.systems.conf` to `/etc/nginx/sites-available/`,
-   symlink it into `/etc/nginx/sites-enabled/`, keep only the port 80 block active, then
-   `sudo nginx -t && sudo systemctl reload nginx`.
-4. **Certificate**: first check how Ghost's certificates are managed:
+3. **nginx** (done 11 November 2026): `deploy/nginx/hiraeth.systems.conf` is installed at
+   `/etc/nginx/sites-available/hiraeth.systems.conf` and enabled. Plain HTTP and `www`
+   redirect to `https://hiraeth.systems`. `deploy/nginx/hiraeth.systems.stage1-http.conf` is
+   the HTTP only fallback, kept for rolling back (a copy sits on the server as
+   `hiraeth.systems.conf.bak-stage1`, not enabled).
+   To change it: copy the file up, then `sudo nginx -t && sudo systemctl reload nginx`.
+4. **Certificate** (done 11 November 2026): issued by certbot, which was already on the server
+   for the websdr sites. Ghost's own certificate uses acme.sh and is left alone.
    ```bash
-   sudo ls /etc/letsencrypt
-   sudo crontab -l
+   sudo certbot certonly --webroot -w /var/www/hiraeth.systems \
+     -d hiraeth.systems -d www.hiraeth.systems --cert-name hiraeth.systems \
+     --deploy-hook "systemctl reload nginx"
    ```
-   If you see `acme.sh` there (Ghost's usual setup), issue one for HSOS with the same tool,
-   as root:
-   ```bash
-   /etc/letsencrypt/acme.sh --home /etc/letsencrypt --issue \
-     -d hiraeth.systems -d www.hiraeth.systems \
-     --webroot /var/www/hiraeth.systems --reloadcmd "nginx -s reload"
-   ```
-   Then fill in the certificate paths in the 443 block, uncomment it, test and reload nginx.
-   (If acme.sh isn't there, ask Claude Code to set up certbot instead.)
+   `certbot.timer` renews it automatically. To check: `sudo certbot certificates`.
 5. **Deploy** from Saoirse. In Claude Code, type `/deploy`: it shows what will change, asks
    you to confirm, uploads and checks. Or by hand:
    ```bash

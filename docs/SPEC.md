@@ -645,6 +645,14 @@ speaker before going live.
   the Ghost nginx files.
 - TLS: the Ghost install appears to manage certificates with acme.sh in `/etc/letsencrypt`.
   Check that first, and reuse it for hiraeth.systems; otherwise use certbot. See README.
+- **Decided 1.1, HTTPS live 11 November 2026:** Ghost does use acme.sh (its certificate is in
+  `/etc/letsencrypt/hiraeth.club/`), but certbot is also installed and already renews the two
+  websdr certificates on `certbot.timer`. HSOS uses **certbot**, webroot method, certificate
+  name `hiraeth.systems` (covers `www` too), with a deploy hook that reloads nginx. This keeps
+  HSOS entirely clear of Ghost's acme.sh setup and never lets a tool edit nginx files. The
+  owner approved Claude Code doing this over SSH with sudo, once, for this step only; the
+  deploy script still never uses sudo. `www` and plain HTTP redirect to `https://hiraeth.systems`.
+  HSTS is not switched on yet (it is hard to undo); add it once the site has run well for a while.
 - Note for later: Ubuntu 22.04 leaves standard support in May 2027. Plan the VPS upgrade
   before then.
 
