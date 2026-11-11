@@ -194,7 +194,9 @@ const bin = spriteFromArt(
  * The Hiraeth Systems logo, 32 by 32: an enso (one open brush circle) in white ink, with a sea
  * wave breaking inside it. A thin stroke: the brush lands in a round blot at the top, runs
  * anticlockwise, presses heaviest down the left, then splits into two bristle lines along the
- * bottom right and lifts thin, with a touch of dry ink (G) at the very end. The wave uses the wave ramp, crest to trough, its foam drawn in the same ink.
+ * bottom right and lifts thin, with a touch of dry ink (G) at the very end. The wave fills the
+ * inside of the circle without touching the stroke. It uses the wave ramp, crest to trough,
+ * its foam drawn in the same ink.
  * Ink (W) is black on light backgrounds (the WELCOME.dd masthead) and white on dark ones (boot).
  */
 const logo = (ink: 'black' | 'white') => spriteFromArt(
@@ -205,25 +207,25 @@ const logo = (ink: 'black' | 'white') => spriteFromArt(
     '......WWWWWWWWWWWWWWWWWWW.......',
     '.....WWWWWW.........WWWWW.......',
     '....WWWWW............WWW........',
-    '....WWWW........................',
-    '...WWWW.........................',
-    '...WWWW.......WWWWWW............',
-    '..WWWW......WWAAAAAAW...........',
-    '..WWWW.....WAAABBBBBAW..........',
-    '..WWWW....WAAB.....BBAW.....WG..',
-    '.WWWW....WAB.........BB......W..',
-    '.WWWW....WB...WWW....BB.......G.',
-    '.WWWW.....W..WAAAW...BB......WW.',
-    '.WWWW.......WAB..B..BBC......WW.',
-    '.WWWW.......WB......BBC......WW.',
-    '.WWWW........B.....BBCC......WW.',
-    '.WWWW.............BBCCC......WW.',
-    '.WWWW...........WBBCCCD......WW.',
-    '..WWWW........WWBBCCCDD.......W.',
-    '..WWWW.....WWWBBCCCDDDD.....WWW.',
-    '..WWWWW.....WWBCCCDDDDD.....WW..',
-    '...WWWWW...................WWW..',
-    '....WWWWW.................WWW...',
+    '....WWWW.......WWWWW............',
+    '...WWWW......WWAAAAAAWW.........',
+    '...WWWW....WWAAABBBBBAAW........',
+    '..WWWW....WAAABB.....BBAW.......',
+    '..WWWW...WAABB........BBAW......',
+    '..WWWW..WAAB...........BBW..WG..',
+    '.WWWW...WAB.....WWW.....BBW..W..',
+    '.WWWW..WAB.....WAAAW....BBC...G.',
+    '.WWWW..WB.....WAB..B....BBC..WW.',
+    '.WWWW...W.....WB........BBC..WW.',
+    '.WWWW.........WB.......BBCC..WW.',
+    '.WWWW..........B......BBBCC..WW.',
+    '.WWWW................BBBCCC..WW.',
+    '.WWWW..............WBBBCCCD..WW.',
+    '..WWWW...........WWBBCCCCDD...W.',
+    '..WWWW.........WWBBBCCCCDDD.WWW.',
+    '..WWWWW.....WWWBBBCCCCDDDD..WW..',
+    '...WWWWW..WWBBBCCCCDDDDDD..WWW..',
+    '....WWWWW..WWBCCCDDDDDD...WWW...',
     '.....WWWWW...............W.W....',
     '......WWWWW............WW.W.....',
     '.......WWWWW..........W..W......',
