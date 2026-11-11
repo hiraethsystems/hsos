@@ -1,7 +1,8 @@
 /**
  * The HSOS desktop shell: the one client-side island (SPEC 3.1). It boots on top of the static
- * page on capable desktop browsers and shows the same content in windows. Narrow screens and
- * visitors who chose Plain View keep the static page (Handheld mode arrives in Phase 6).
+ * page and shows the same content in windows. Screens too small for a desktop get HSOS
+ * Handheld (SPEC 14): one app at a time, filling the screen. Visitors who chose Plain View keep
+ * the static page.
  */
 import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
 import { APP_COMMANDS, APP_MOUNTS, APPS, PENDING_APPS, resolveAppName } from './apps/registry';
@@ -12,12 +13,12 @@ import { DesktopIcons, type DesktopIcon } from './desktop/DesktopIcons';
 import { Wallpaper } from './desktop/Wallpaper';
 import { MemoDialog } from './memo/MemoDialog';
 import { MenuBar } from './menu/MenuBar';
-import { buildMenus } from './menu/menus';
+import { buildMenus, type MenuDef } from './menu/menus';
 import type { DivisionId } from './divisions';
 import { describeUrl, url as urls, vfsPath } from './routes';
 import { loadSettings, plainViewChosen, prefersReducedMotion, saveSettings, setPlainView, type Settings } from './settings';
 import type { AppArgs, Rect } from './types';
-import { clampRect, ICONS_W, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
+import { clampRect, ICONS_W, MENU_H, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
 import { Window, WINDOW_HELP_ID } from './wm/Window';
 import { BASE_MOUNTS } from './vfs/base';
 import { Vfs } from './vfs/vfs';
@@ -100,6 +101,28 @@ function wmReducer(s: WmState, a: WmAction): WmState {
 
 const viewport = (): Bounds => ({ w: window.innerWidth, h: window.innerHeight });
 
+/** Big enough for overlapping windows. Smaller screens run Handheld. Also in Document.astro. */
+const DESKTOP_QUERY = '(min-width: 900px) and (min-height: 560px)';
+const isHandheld = () => !window.matchMedia(DESKTOP_QUERY).matches;
+
+/** Handheld or not, following the screen as it rotates or the window is resized. */
+function useHandheld(): boolean {
+  const [handheld, setHandheld] = useState(isHandheld);
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    const on = () => setHandheld(!mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return handheld;
+}
+
+/** Every menu folded into one, for Handheld's single ◆ menu (SPEC 14). */
+function foldMenus(menus: MenuDef[]): MenuDef[] {
+  const items = menus.flatMap((m, i) => (i === 0 ? m.items : ['separator' as const, ...m.items]));
+  return [{ id: 'all', label: '◆ HSOS', items }];
+}
+
 /** Give keyboard focus to the window on top, if any. */
 function focusTopWindow(): void {
   window.requestAnimationFrame(() => {
@@ -112,14 +135,15 @@ function focusTopWindow(): void {
  * Which boot to play (SPEC 8, decided 1.1). Full on a first visit to `/`, or every visit if the
  * visitor asked for it. Otherwise short: later visits, and first visits that land on a deep link.
  */
-function chooseBoot(s: Settings): BootMode {
+function chooseBoot(s: Settings, handheld: boolean): BootMode {
   if (s.fullBootEveryVisit) return 'full';
+  if (handheld) return 'short'; // SPEC 14: Handheld plays the short boot
   return !s.seenBoot && window.location.pathname === '/' ? 'full' : 'short';
 }
 const windowKey = (appId: string, args: AppArgs) => `${appId}:${APPS[appId]?.windowKey?.(args) ?? ''}`;
 
 /** The windows open when the desktop first appears. */
-function initialWindows(bounds: Bounds): WmState {
+function initialWindows(bounds: Bounds, handheld: boolean): WmState {
   const here = describeUrl(window.location.pathname);
   const page = (u: string): AppArgs => ({ url: u });
   const size = (args: AppArgs) => APPS.page!.defaultSize(args);
@@ -133,7 +157,8 @@ function initialWindows(bounds: Bounds): WmState {
     const divisions = page(urls.divisions);
     const ws = size(welcome);
     const ds = size(divisions);
-    add(divisions, bounds.w - ICONS_W >= 20 + ws.w + 20 + ds.w ? { x: 20 + ws.w + 20, y: 44, ...ds } : { x: 70, y: 90, ...ds });
+    // Handheld shows one app at a time, so only the handbook.
+    if (!handheld) add(divisions, bounds.w - ICONS_W >= 20 + ws.w + 20 + ds.w ? { x: 20 + ws.w + 20, y: 44, ...ds } : { x: 70, y: 90, ...ds });
     add(welcome, { x: 20, y: 44, ...ws });
     if (!here) {
       // Not a page we know (the 404 page): show it on top, as it is what was asked for.
@@ -153,10 +178,7 @@ const KEYBOARD_HELP =
 // ---- The shell -----------------------------------------------------------------------------
 
 export default function Shell(props: Props) {
-  const [mode] = useState<'desktop' | 'plain' | 'off'>(() => {
-    if (plainViewChosen()) return 'plain';
-    return window.matchMedia('(min-width: 900px)').matches ? 'desktop' : 'off';
-  });
+  const [mode] = useState<'desktop' | 'plain'>(() => (plainViewChosen() ? 'plain' : 'desktop'));
 
   useEffect(() => {
     const root = document.documentElement;
@@ -178,17 +200,17 @@ export default function Shell(props: Props) {
       </button>
     );
   }
-  if (mode === 'off') return null;
   return <Desktop {...props} />;
 }
 
 function Desktop({ projects, memos }: Props) {
   const [vfs] = useState(() => buildVfs({ projects, memos }));
+  const handheld = useHandheld();
   const [bounds, setBounds] = useState<Bounds>(viewport);
   const [settings, setSettings] = useState(loadSettings);
   const [memo, setMemo] = useState<string | null>(null);
   const [reducedMotion] = useState(prefersReducedMotion);
-  const [boot, setBoot] = useState<BootMode | null>(() => chooseBoot(settings));
+  const [boot, setBoot] = useState<BootMode | null>(() => chooseBoot(settings, isHandheld()));
   const updateSettings = (patch: Partial<Settings>) =>
     setSettings((s) => {
       const next = { ...s, ...patch };
@@ -217,14 +239,16 @@ function Desktop({ projects, memos }: Props) {
     // The page the visitor landed on is already in the document: no need to fetch it again.
     const body = document.querySelector('.doc-body');
     if (body) primePage(describeUrl(window.location.pathname)?.url ?? window.location.pathname, body.innerHTML);
-    return initialWindows(viewport());
+    return initialWindows(viewport(), isHandheld());
   });
 
   useEffect(() => {
     const onResize = () => {
       const b = viewport();
       setBounds(b);
-      dispatch({ type: 'clamp', bounds: b });
+      // Handheld windows fill the screen whatever their rect, so keep the desktop rects for
+      // when the screen is big enough again.
+      if (!isHandheld()) dispatch({ type: 'clamp', bounds: b });
     };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
@@ -295,6 +319,8 @@ function Desktop({ projects, memos }: Props) {
       }),
     [projects, bounds, wm.wins.length],
   );
+  const barMenus = useMemo(() => (handheld ? foldMenus(menus) : menus), [menus, handheld]);
+  const full: Rect = { x: 0, y: MENU_H, w: bounds.w, h: bounds.h - MENU_H };
 
   const icons: DesktopIcon[] = [
     { label: 'divisions/', icon: 'folder', description: 'every project, by division', run: () => open('divisions') },
@@ -313,9 +339,9 @@ function Desktop({ projects, memos }: Props) {
 
   return (
     <>
-    <div class="hs-shell" inert={boot !== null}>
+    <div class={`hs-shell${handheld ? ' hs-handheld' : ''}`} inert={boot !== null}>
       <Wallpaper id={settings.wallpaper} cycling={clock.cycling} />
-      <MenuBar menus={menus} />
+      <MenuBar menus={barMenus} />
       <div class="hs-windows">
         {wm.wins.map((w) => {
           const app = APPS[w.appId]!;
@@ -324,7 +350,9 @@ function Desktop({ projects, memos }: Props) {
             <Window
               key={w.key}
               winId={w.key}
-              rect={w.rect}
+              rect={handheld ? full : w.rect}
+              fixed={handheld}
+              hidden={handheld && w.key !== activeKey}
               z={w.z}
               chrome={app.chrome(w.args)}
               active={w.key === activeKey}
@@ -350,7 +378,7 @@ function Desktop({ projects, memos }: Props) {
           );
         })}
       </div>
-      <DesktopIcons icons={icons} />
+      <DesktopIcons icons={icons} inert={handheld && wm.wins.length > 0} />
       <p id={WINDOW_HELP_ID} hidden>
         {KEYBOARD_HELP}
       </p>

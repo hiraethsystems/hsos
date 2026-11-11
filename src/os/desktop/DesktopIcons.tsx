@@ -10,9 +10,10 @@ export interface DesktopIcon {
   run: () => void;
 }
 
-export function DesktopIcons({ icons }: { icons: DesktopIcon[] }) {
+/** Down the right edge on the desktop; a home screen grid in Handheld (CSS decides). */
+export function DesktopIcons({ icons, inert = false }: { icons: DesktopIcon[]; inert?: boolean }) {
   return (
-    <nav class="hs-icons" aria-label="Desktop">
+    <nav class="hs-icons" aria-label="Desktop" inert={inert}>
       <ul>
         {icons.map((ic) => (
           <li>

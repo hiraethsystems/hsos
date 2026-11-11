@@ -1,4 +1,4 @@
-// Phase 2: the desktop shell. Windows, menus, icons, memos, links, Plain View, narrow screens.
+// Phase 2: the desktop shell. Windows, menus, icons, memos, links, Plain View.
 import { launch } from './bidi.mjs';
 
 export default async function desktop({ base, check }) {
@@ -105,10 +105,10 @@ try {
   await b.eval(`document.querySelector('.hs-plain-return').click()`); await b.wait(1500); await b.skipBoot();
   check('Return to the desktop works', await b.eval(`!!document.querySelector('.hs-shell')`));
 
-  // Narrow screens keep the static page
+  // Narrow screens get HSOS Handheld (tested in polish.test.mjs)
   await b.viewport(800, 900);
-  await b.goto(base + '/srv/divisions/'); await b.wait(600);
-  check('below 900px the static page is used', await b.eval(`!document.querySelector('.hs-shell') && getComputedStyle(document.querySelector('main.doc-window')).display !== 'none'`));
+  await b.goto(base + '/srv/divisions/'); await b.wait(600); await b.skipBoot();
+  check('below 900px HSOS Handheld runs', await b.eval(`!!document.querySelector('.hs-shell.hs-handheld')`));
 
   const errors = b.logs.filter((l) => l.startsWith('error'));
   check('no JavaScript errors', errors.length === 0, errors.join(' | '));

@@ -747,3 +747,61 @@ html.hsos-shell body {
   color: var(--c-black);
   background: var(--c-highlight);
 }
+
+/* ---- HSOS Handheld (SPEC 14): one app at a time, a home screen grid ---------------------- */
+
+.hs-win[hidden] {
+  display: none;
+}
+.hs-handheld .hs-win {
+  border-width: 0;
+  box-shadow: none;
+}
+.hs-handheld .hs-tb {
+  min-height: 40px;
+  cursor: default;
+}
+.hs-handheld .hs-x {
+  min-width: 44px;
+  min-height: 40px;
+}
+.hs-handheld .hs-icons {
+  inset: 44px 0 0 0;
+  overflow: auto;
+  padding: 8px 12px 16px;
+}
+.hs-handheld .hs-icons ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 16px 8px;
+  height: auto;
+}
+.hs-handheld .hs-ico {
+  width: 100%;
+  min-width: 0;
+}
+.hs-handheld .hs-menu {
+  width: min(420px, calc(100vw - 12px));
+  max-height: calc(100dvh - 44px);
+  overflow-y: auto;
+}
+.hs-handheld .hs-mi-hint {
+  white-space: nowrap;
+}
+.hs-handheld .hs-mi {
+  min-height: 40px;
+}
+.hs-handheld .masthead-title {
+  font-size: 28px;
+  line-height: 30px;
+}
+.hs-handheld .hs-ledger-chart,
+.hs-handheld .hs-ledger-labels {
+  min-width: 0;
+  gap: 4px;
+}
+@media (max-width: 420px) {
+  .hs-handheld .hs-morale {
+    display: none;
+  }
+}

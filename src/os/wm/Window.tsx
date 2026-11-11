@@ -15,6 +15,10 @@ interface Props {
   /** Identifies the window in the document, for focusing it from outside. */
   winId: string;
   rect: Rect;
+  /** Handheld: the window fills the screen and cannot be dragged or resized. */
+  fixed?: boolean;
+  /** Handheld: windows behind the one on show stay open (keeping their state) but hidden. */
+  hidden?: boolean;
   z: number;
   chrome: WindowChrome;
   active: boolean;
@@ -30,7 +34,7 @@ interface Props {
 
 type Drag = { mode: 'move' | 'resize'; px: number; py: number; start: Rect; id: number };
 
-export function Window({ winId, rect, z, chrome, active, bounds, minSize, focusOnMount, onFocus, onClose, onRect, children }: Props) {
+export function Window({ winId, rect, fixed = false, hidden = false, z, chrome, active, bounds, minSize, focusOnMount, onFocus, onClose, onRect, children }: Props) {
   const titleId = useId();
   const ref = useRef<HTMLElement>(null);
   const drag = useRef<Drag | null>(null);
@@ -40,7 +44,7 @@ export function Window({ winId, rect, z, chrome, active, bounds, minSize, focusO
   }, []);
 
   const begin = (mode: Drag['mode']) => (e: TargetedPointerEvent<HTMLElement>) => {
-    if (e.button !== 0 || (e.target as Element).closest('button')) return;
+    if (fixed || e.button !== 0 || (e.target as Element).closest('button')) return;
     e.preventDefault();
     onFocus();
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -64,7 +68,7 @@ export function Window({ winId, rect, z, chrome, active, bounds, minSize, focusO
   // Keyboard alternative to dragging (WCAG 2.5.7): with the window frame itself focused,
   // arrow keys move it and Shift with arrow keys resizes it.
   const onKeyDown = (e: TargetedKeyboardEvent<HTMLElement>) => {
-    if (e.target !== e.currentTarget || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (fixed || e.target !== e.currentTarget || e.ctrlKey || e.altKey || e.metaKey) return;
     const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
     if (!d) return;
     e.preventDefault();
@@ -87,11 +91,12 @@ export function Window({ winId, rect, z, chrome, active, bounds, minSize, focusO
   return (
     <section
       ref={ref}
-      class={`hs-win${active ? ' is-active' : ''}`}
+      class={`hs-win${active ? ' is-active' : ''}${fixed ? ' is-fixed' : ''}`}
+      hidden={hidden}
       style={style}
       data-win={winId}
       aria-labelledby={titleId}
-      aria-describedby={WINDOW_HELP_ID}
+      aria-describedby={fixed ? undefined : WINDOW_HELP_ID}
       tabIndex={-1}
       onKeyDown={onKeyDown}
       onPointerDownCapture={onFocus}
@@ -106,7 +111,7 @@ export function Window({ winId, rect, z, chrome, active, bounds, minSize, focusO
         </button>
       </div>
       <div class="hs-win-body hs-scroll">{children}</div>
-      <div class="hs-grip" aria-hidden="true" onPointerDown={begin('resize')} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />
+      {!fixed && <div class="hs-grip" aria-hidden="true" onPointerDown={begin('resize')} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
     </section>
   );
 }
