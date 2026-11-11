@@ -18,7 +18,8 @@ export function primePage(url: string, html: string): void {
 }
 
 async function fetchBody(url: string): Promise<string> {
-  const res = await fetch(url, { headers: { Accept: 'text/html' } });
+  // no-cache: always ask the server (a cheap 304 when unchanged), so a deploy shows at once.
+  const res = await fetch(url, { headers: { Accept: 'text/html' }, cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
   const body = doc.querySelector('.doc-body');

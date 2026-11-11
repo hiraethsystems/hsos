@@ -762,6 +762,11 @@ speaker before going live.
   owner approved Claude Code doing this over SSH with sudo, once, for this step only; the
   deploy script still never uses sudo. `www` and plain HTTP redirect to `https://hiraeth.systems`.
   HSTS is not switched on yet (it is hard to undo); add it once the site has run well for a while.
+- Caching (11 November 2026): pages, screenshots and `version.txt` are served with
+  `Cache-Control: no-cache`, so browsers check with the server (a cheap 304 when nothing
+  changed) and a deploy shows straight away. Hashed files in `/_astro/` keep their one year
+  cache. Before this, nginx sent no header and Firefox kept showing old dossiers after a
+  deploy. The desktop's document windows also fetch with `cache: 'no-cache'`.
 - Note for later: Ubuntu 22.04 leaves standard support in May 2027. Plan the VPS upgrade
   before then.
 
