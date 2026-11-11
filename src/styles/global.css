@@ -220,6 +220,16 @@ a:hover {
   border-top: 0;
   padding-top: 0;
 }
+/* Extra screenshots inside a dossier description. width and height on the tag reserve the
+   space before the image loads, so a window fitted to its content does not jump. */
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 0 1em;
+  border: 2px solid var(--c-ink);
+  background: var(--c-black);
+}
 .prose code {
   font-family: var(--font-term);
   font-size: 1.15em;

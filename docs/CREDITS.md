@@ -23,6 +23,18 @@ These are build and runtime libraries. Only Preact will ever be sent to visitors
 | Preact | MIT | The desktop shell island |
 | @astrojs/check, TypeScript | MIT, Apache 2.0 | `npm run check` (development only) |
 
+## Project screenshots
+
+Images in `public/shots/`, taken from each project's own repository. They are shown on that
+project's dossier only.
+
+| File | Source | Author | Licence |
+|---|---|---|---|
+| `vitasdr.png` | VitaSDR LiveArea background, `sce_sys/livearea/contents/bg0.png` | Hiraeth Systems | The owner's own work |
+| `dx-garden.png`, `dx-garden-list.png`, `dx-garden-menu.png` | DX Garden `docs/screenshots/` | Hiraeth Systems | The owner's own work (GPL v3 project). Text in them is Noto, SIL OFL 1.1. The map is from Natural Earth, public domain |
+| `moon-child-vita.png` | `vita-homebrew` catalogue, `docs/screenshots/moon-child.png`, the game's title screen | Graphics by Metin Seven | CC BY-NC 4.0 (the Moon Child FE asset licence). Non-commercial use with credit, which the dossier gives |
+| `dreamkartsu.png` | DreamKartsU `port/wuhb/tv.png`, cropped | DreamKarts art by Rich Stokes | MIT (DreamKarts and DreamKartsU licence) |
+
 ## Inspiration
 
 TempleOS by Terry A. Davis (public domain).

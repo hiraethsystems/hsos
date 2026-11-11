@@ -685,9 +685,13 @@ description itself stays factual so people can actually learn about the project.
 `src/content/memos/<slug>.md`: title, date, from (a Division), to (default "All Employees"),
 summary, body. Rendered as an internal memorandum.
 
-Initial projects (descriptions are placeholders until the owner supplies real ones, see
-`docs/CONTENT.md`): VitaSDR (Signals), DX Garden (Signals), Moon Child Vita (Legacy
-Acquisitions), DreamKartsU (Leisure Compliance), RBR-1 (Defence Contracts).
+Initial projects: VitaSDR (Signals), DX Garden (Signals), Moon Child Vita (Legacy
+Acquisitions), DreamKartsU (Leisure Compliance), RBR-1 (Defence Contracts). The first four
+were written from their GitHub READMEs with screenshots from their repositories. RBR-1 has
+no repository yet and stays a placeholder until the owner supplies it (`docs/CONTENT.md`).
+
+Extra screenshots may sit in a dossier's Markdown body as `<img>` tags with `width` and
+`height` set, so the space is reserved before they load and fitted windows do not jump.
 
 ---
 
@@ -801,4 +805,4 @@ From the design session, in rough priority order:
 - Final UI and terminal fonts, and the font for long prose (system sans serif until then).
 - Exact URL scheme (section 3.3 proposal).
 - Whether the boot plays in full on every visit or only the first (spec default: first only).
-- Real project descriptions and screenshots (`docs/CONTENT.md`).
+- RBR-1 description and screenshot (`docs/CONTENT.md`).
