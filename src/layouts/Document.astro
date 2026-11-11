@@ -7,7 +7,7 @@ import { cssVariables, type TitleRampName } from '../os/palette';
 import { divisionName } from '../os/divisions';
 import { pathSegments, STATIC_DIRS, url } from '../os/routes';
 import Shell from '../os/Shell';
-import { getProjects } from '../site/content';
+import { getMemos, getProjects } from '../site/content';
 import '../styles/global.css';
 import '../styles/shell.css';
 
@@ -41,9 +41,12 @@ const projects = await getProjects();
 const linkable = new Set([...STATIC_DIRS, ...projects.map((p) => url.dossier(p.data.division, p.id))]);
 const shellProjects = projects.map((p) => ({
   name: p.data.name,
+  slug: p.id,
+  division: p.data.division,
   url: url.dossier(p.data.division, p.id),
   divisionName: divisionName(p.data.division),
 }));
+const shellMemos = (await getMemos()).map((m) => ({ slug: m.id, title: m.data.title, url: url.memo(m.id) }));
 const segments = pathSegments(path, linkable, Astro.url.pathname);
 
 const nav: { section: Section; href: string; label: string }[] = [
@@ -107,6 +110,6 @@ const nav: { section: Section; href: string; label: string }[] = [
       </div>
     </main>
     <footer class="doc-footer">HSOS 256. All feelings reserved.</footer>
-    <div id="hsos-root"><Shell client:only="preact" projects={shellProjects} /></div>
+    <div id="hsos-root"><Shell client:only="preact" projects={shellProjects} memos={shellMemos} /></div>
   </body>
 </html>

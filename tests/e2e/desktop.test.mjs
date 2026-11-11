@@ -75,9 +75,6 @@ try {
   check('memo focuses Acknowledge', (await b.eval(`document.activeElement?.textContent`)) === 'Acknowledge');
   await b.keys(['']); await b.wait(100);
   check('Escape closes memo', await b.eval(`!document.querySelector('.hs-memo')`));
-  ic = await icon('terminal'); await b.click(ic.x, ic.y); await b.wait(150);
-  check('unbuilt app shows awaiting-approval memo', (await b.eval(`document.querySelector('.hs-memo p')?.textContent`))?.includes('restored from tape'));
-  await b.eval(`document.querySelector('.hs-memo button').click()`);
   ic = await icon('divisions/'); await b.click(ic.x, ic.y); await b.wait(150);
   check('divisions/ icon focuses existing window (singleton)', (await wins()).filter((x) => x.t === '/srv/divisions/').length === 1 && top(await wins()).t === '/srv/divisions/');
 

@@ -4,7 +4,7 @@
  * visitors who chose Plain View keep the static page (Handheld mode arrives in Phase 6).
  */
 import { useEffect, useMemo, useReducer, useState } from 'preact/hooks';
-import { APPS, PENDING_APPS, resolveAppName } from './apps/registry';
+import { APP_COMMANDS, APP_MOUNTS, APPS, PENDING_APPS, resolveAppName } from './apps/registry';
 import { primePage } from './apps/page/PageView';
 import { BootScreen, type BootMode } from './boot/BootScreen';
 import type { AnimationClock } from './clock';
@@ -13,20 +13,41 @@ import { Wallpaper } from './desktop/Wallpaper';
 import { MemoDialog } from './memo/MemoDialog';
 import { MenuBar } from './menu/MenuBar';
 import { buildMenus } from './menu/menus';
-import { describeUrl, url as urls } from './routes';
+import type { DivisionId } from './divisions';
+import { describeUrl, url as urls, vfsPath } from './routes';
 import { loadSettings, plainViewChosen, prefersReducedMotion, saveSettings, setPlainView, type Settings } from './settings';
 import type { AppArgs, Rect } from './types';
 import { clampRect, ICONS_W, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
 import { Window } from './wm/Window';
+import { BASE_MOUNTS } from './vfs/base';
+import { Vfs } from './vfs/vfs';
 
 export interface ShellProject {
   name: string;
+  slug: string;
+  division: DivisionId;
   url: string;
   divisionName: string;
+}
+export interface ShellMemo {
+  slug: string;
+  title: string;
+  url: string;
 }
 
 interface Props {
   projects: ShellProject[];
+  memos: ShellMemo[];
+}
+
+/** The filesystem: the fixed tree, then content, then what each app adds (SPEC 9). */
+function buildVfs({ projects, memos }: Props): Vfs {
+  return new Vfs([
+    ...BASE_MOUNTS,
+    ...projects.map((p) => ({ path: vfsPath.dossier(p.division, p.slug), opens: { app: 'page', args: { url: p.url } }, title: p.name })),
+    ...memos.map((m) => ({ path: vfsPath.memo(m.slug), opens: { app: 'page', args: { url: m.url } }, title: m.title })),
+    ...APP_MOUNTS,
+  ]);
 }
 
 // ---- Window state ------------------------------------------------------------------------
@@ -128,7 +149,7 @@ function initialWindows(bounds: Bounds): WmState {
 
 // ---- The shell -----------------------------------------------------------------------------
 
-export default function Shell({ projects }: Props) {
+export default function Shell(props: Props) {
   const [mode] = useState<'desktop' | 'plain' | 'off'>(() => {
     if (plainViewChosen()) return 'plain';
     return window.matchMedia('(min-width: 900px)').matches ? 'desktop' : 'off';
@@ -155,10 +176,11 @@ export default function Shell({ projects }: Props) {
     );
   }
   if (mode === 'off') return null;
-  return <Desktop projects={projects} />;
+  return <Desktop {...props} />;
 }
 
-function Desktop({ projects }: Props) {
+function Desktop({ projects, memos }: Props) {
+  const [vfs] = useState(() => buildVfs({ projects, memos }));
   const [bounds, setBounds] = useState<Bounds>(viewport);
   const [settings, setSettings] = useState(loadSettings);
   const [memo, setMemo] = useState<string | null>(null);
@@ -187,6 +209,7 @@ function Desktop({ projects }: Props) {
     setBoot(null);
     focusTopWindow();
   };
+  const reboot = () => setBoot('full');
   const [wm, dispatch] = useReducer(wmReducer, undefined, () => {
     // The page the visitor landed on is already in the document: no need to fetch it again.
     const body = document.querySelector('.doc-body');
@@ -240,7 +263,7 @@ function Desktop({ projects }: Props) {
         open: (n) => open(n),
         openUrl: (u) => open('page', { url: u }),
         memo: setMemo,
-        reboot: () => setBoot('full'),
+        reboot,
         plainView: () => {
           setPlainView(true);
           window.location.reload();
@@ -288,7 +311,17 @@ function Desktop({ projects }: Props) {
               onClose={() => close(w.key)}
               onRect={(rect) => dispatch({ type: 'rect', key: w.key, rect })}
             >
-              <App args={w.args} open={open} memo={setMemo} settings={settings} updateSettings={updateSettings} clock={clock} />
+              <App
+                args={w.args}
+                open={open}
+                memo={setMemo}
+                settings={settings}
+                updateSettings={updateSettings}
+                clock={clock}
+                vfs={vfs}
+                commands={APP_COMMANDS}
+                reboot={reboot}
+              />
             </Window>
           );
         })}

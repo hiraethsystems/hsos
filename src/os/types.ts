@@ -8,6 +8,8 @@ import type { AnimationClock } from './clock';
 import type { TitleRampName } from './palette';
 import type { Settings } from './settings';
 import type { IconName } from './sprites/icons';
+import type { TerminalCommand } from './terminal/types';
+import type { Vfs, VfsMount } from './vfs/vfs';
 
 export interface Rect {
   x: number;
@@ -30,7 +32,12 @@ export interface AppProps {
   updateSettings: (patch: Partial<Settings>) => void;
   /** What the app may animate, for use with `useTick` from `clock.ts`. */
   clock: AnimationClock;
-  // Added in Phase 5, as the spec describes: vfs.
+  /** The filesystem, shared by every app. */
+  vfs: Vfs;
+  /** Terminal commands added by apps (the terminal has its own core set). */
+  commands: readonly TerminalCommand[];
+  /** Play the full boot again. */
+  reboot: () => void;
 }
 
 /** The chrome of one window, which can depend on its arguments (one viewer, many pages). */
@@ -53,5 +60,9 @@ export interface HsosApp {
   singleton?: boolean;
   /** For apps with many windows (the page viewer), what makes two windows "the same". */
   windowKey?: (args: AppArgs) => string;
+  /** Terminal commands this app adds. */
+  commands?: readonly TerminalCommand[];
+  /** Files and directories this app adds to the filesystem. */
+  vfs?: readonly VfsMount[];
   component: (props: AppProps) => JSX.Element;
 }

@@ -388,7 +388,7 @@ the Ledger, `workplace.conf` opens Settings, any `DOSSIER` opens that project's 
 - Output scrolls (newest at bottom), keeps the last 120 lines, coloured per line.
 - Command history with Up/Down arrows (new in build). Tab completion of paths (new in build).
 - Note: browsers use F7 for caret browsing. Test in Phase 5 whether it can be intercepted
-  while the terminal has focus; if not, document `board` as the main way in.
+  while the terminal has focus; if not, document `board` as the main way in. (See 12.3.)
 - Commands are registered through a command registry so apps can add their own.
 
 v1 commands:
@@ -527,6 +527,31 @@ scrolling and focus. This is what keeps every future app looking like part of on
 - **Workplace Settings**: wallpaper thumbnails are small copies of the real wallpapers, and the
   chosen one is marked with `aria-pressed`. Under reduced motion the colour cycling checkbox
   is shown off and disabled, with a note saying why.
+
+### 12.3 Decided 1.1, as built in Phase 5
+
+- The manifest gains `commands` (terminal commands the app adds) and `vfs` (files it adds), as
+  section 12 always intended. The Board adds `board` and `/opt/board/*`; Settings adds `wall`
+  and `workplace.conf`; the Ledger, Listening Post and terminal add their own files. Core
+  commands live with the terminal (`src/os/apps/terminal/commands.ts`).
+- `AppProps` gains `vfs`, `commands` (every app-added command) and `reboot`.
+- The filesystem is built once when the desktop starts: the fixed tree (`src/os/vfs/base.ts`),
+  then every dossier and memo from content, then app files. Names carry tags shown in listings
+  ("passwd (redacted)"), so Tab completion uses the real name.
+- The Board's current directive lives in `src/os/apps/board/directive.ts`, so the `board`
+  command, F7 and the Consult button always agree with the Board window.
+- The terminal window's title is `/dev/tty0`. The working directory is shown in the prompt.
+- Tab completes only when something has been typed. On an empty line Tab moves focus as
+  usual, so keyboard users are never trapped. Shift+Tab always moves focus.
+- F7 in the terminal is caught and its default prevented, and the tests confirm the terminal
+  receives it. Whether a given browser still toggles caret browsing has to be checked by hand
+  in a real browser (the test browser has no caret browsing prompt). `board` is the documented
+  way in either way.
+- Texts not given in section 9 are house style and can be changed freely: binary files ("would
+  only upset you"), `/dev/synergy`, `/var/log/complianced.log`, the redacted, classified,
+  seized and disabled files, and the replies to `cat` or `open` with nothing after them.
+- The output is a `role="log"` live region, and `palette` draws each colour as a swatch with
+  its name and hex code beside it in normal text, so dark colours stay readable.
 
 ## 13. Content model
 

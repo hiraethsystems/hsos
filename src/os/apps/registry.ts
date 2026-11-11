@@ -10,6 +10,7 @@ import { ledgerApp } from './ledger';
 import { listeningApp } from './listening';
 import { pageApp } from './page';
 import { settingsApp } from './settings';
+import { terminalApp } from './terminal';
 
 export const APPS: Readonly<Record<string, HsosApp>> = {
   [pageApp.id]: pageApp,
@@ -17,12 +18,19 @@ export const APPS: Readonly<Record<string, HsosApp>> = {
   [ledgerApp.id]: ledgerApp,
   [listeningApp.id]: listeningApp,
   [settingsApp.id]: settingsApp,
+  [terminalApp.id]: terminalApp,
 };
 
-/** Apps still being built (Phase 5). Opening one shows its HR memo instead. */
-export const PENDING_APPS: Readonly<Record<string, string>> = {
-  terminal: 'The legacy text layer is being restored from tape. Please hold.',
-};
+/** Terminal commands added by apps. */
+export const APP_COMMANDS = Object.values(APPS).flatMap((a) => a.commands ?? []);
+/** Files added to the filesystem by apps. */
+export const APP_MOUNTS = Object.values(APPS).flatMap((a) => a.vfs ?? []);
+
+/**
+ * Apps announced but not built yet. Opening one shows its HR memo instead. Empty for now; add
+ * an entry here when an app is promised before it exists.
+ */
+export const PENDING_APPS: Readonly<Record<string, string>> = {};
 
 /** Resolve a name used in links and menus (`welcome`, `board`, ...) to an app and its arguments. */
 export function resolveAppName(name: string): { appId: string; args?: Record<string, string> } {

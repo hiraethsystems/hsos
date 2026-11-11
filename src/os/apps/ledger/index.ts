@@ -9,5 +9,6 @@ export const ledgerApp: HsosApp = {
   icon: 'ledger',
   defaultSize: () => ({ w: 480, h: 300 }),
   minSize: { w: 300, h: 200 },
+  vfs: [{ path: '/var/lib/ledger/morale.csv', opens: { app: 'ledger' }, title: 'Ledger' }],
   component: Ledger,
 };

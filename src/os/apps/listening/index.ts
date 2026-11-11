@@ -9,5 +9,6 @@ export const listeningApp: HsosApp = {
   icon: 'waterfall',
   defaultSize: () => ({ w: 520, h: 240 }),
   minSize: { w: 300, h: 180 },
+  vfs: [{ path: '/dev/lp7', opens: { app: 'listening' }, title: 'Listening Post 7' }],
   component: ListeningPost,
 };

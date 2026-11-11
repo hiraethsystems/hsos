@@ -3,13 +3,13 @@
  * through the rainbow ramp while colour cycling is on, and the eye blinks every few seconds
  * unless reduced motion is asked for.
  */
-import { useMemo, useState } from 'preact/hooks';
+import { useMemo } from 'preact/hooks';
 import { useTick } from '../../clock';
 import { RAMP, refIndex } from '../../palette';
 import type { Sprite } from '../../sprites/sprite';
 import { SpriteCanvas } from '../../sprites/SpriteCanvas';
-import { boardDirective } from '../../text/board-words';
 import type { AppProps } from '../../types';
+import { consultBoard, useDirective } from './directive';
 
 const EYE_W = 14;
 const EYE_H = 9;
@@ -52,7 +52,7 @@ function eyeSprite(irisSlot: number, blinking: boolean): Sprite {
 }
 
 export function Board({ clock }: AppProps) {
-  const [directive, setDirective] = useState(() => boardDirective());
+  const directive = useDirective();
   const tick = useTick(clock.motion);
   const cycle = RAMP.cycle;
   const iris = cycle[clock.cycling ? (tick * 2) % cycle.length : 0]!;
@@ -67,7 +67,7 @@ export function Board({ clock }: AppProps) {
           {directive}
         </p>
         <div class="hs-board-actions">
-          <button type="button" class="hs-btn" onClick={() => setDirective(boardDirective())}>
+          <button type="button" class="hs-btn" onClick={consultBoard}>
             Consult the Board
           </button>
           <span class="hs-muted">Interpretation is your responsibility.</span>
