@@ -44,6 +44,8 @@ export async function launch({ width = 1280, height = 800, port = 9333, prefs = 
     wait: (ms) => new Promise((r) => setTimeout(r, ms)),
     pointer: (steps) => send('input.performActions', { context, actions: [{ type: 'pointer', id: 'mouse', parameters: { pointerType: 'mouse' }, actions: steps }] }),
     keys: (keys) => send('input.performActions', { context, actions: [{ type: 'key', id: 'kbd', actions: keys.flatMap((k) => [{ type: 'keyDown', value: k }, { type: 'keyUp', value: k }]) }] }),
+    /** Hold modifier keys (WebDriver key values, e.g. '\uE009' for Control) while pressing one key. */
+    combo: (mods, key) => send('input.performActions', { context, actions: [{ type: 'key', id: 'kbd', actions: [...mods.map((m) => ({ type: 'keyDown', value: m })), { type: 'keyDown', value: key }, { type: 'keyUp', value: key }, ...mods.reverse().map((m) => ({ type: 'keyUp', value: m }))] }] }),
     click: (x, y) => api.pointer([{ type: 'pointerMove', x: Math.round(x), y: Math.round(y) }, { type: 'pointerDown', button: 0 }, { type: 'pointerUp', button: 0 }]),
     drag: (x1, y1, x2, y2) => api.pointer([{ type: 'pointerMove', x: Math.round(x1), y: Math.round(y1) }, { type: 'pointerDown', button: 0 }, { type: 'pointerMove', x: Math.round((x1 + x2) / 2), y: Math.round((y1 + y2) / 2), duration: 100 }, { type: 'pointerMove', x: Math.round(x2), y: Math.round(y2), duration: 100 }, { type: 'pointerUp', button: 0 }]),
     /** Skip the boot screen if it is showing. */

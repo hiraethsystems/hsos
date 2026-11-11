@@ -1,12 +1,19 @@
 /**
  * A window: chrome, dragging, resizing, focus and scrolling. Apps only ever draw the contents.
  */
-import type { ComponentChildren, TargetedPointerEvent } from 'preact';
+import type { ComponentChildren, TargetedKeyboardEvent, TargetedPointerEvent } from 'preact';
 import { useEffect, useId, useRef } from 'preact/hooks';
 import type { Rect, WindowChrome } from '../types';
 import { clampRect, type Bounds } from './geometry';
 
+/** Pixels per arrow key press when moving or resizing from the keyboard. */
+const KEY_STEP = 20;
+/** Id of the hidden text that explains the keyboard controls (rendered once by the shell). */
+export const WINDOW_HELP_ID = 'hs-win-help';
+
 interface Props {
+  /** Identifies the window in the document, for focusing it from outside. */
+  winId: string;
   rect: Rect;
   z: number;
   chrome: WindowChrome;
@@ -23,7 +30,7 @@ interface Props {
 
 type Drag = { mode: 'move' | 'resize'; px: number; py: number; start: Rect; id: number };
 
-export function Window({ rect, z, chrome, active, bounds, minSize, focusOnMount, onFocus, onClose, onRect, children }: Props) {
+export function Window({ winId, rect, z, chrome, active, bounds, minSize, focusOnMount, onFocus, onClose, onRect, children }: Props) {
   const titleId = useId();
   const ref = useRef<HTMLElement>(null);
   const drag = useRef<Drag | null>(null);
@@ -54,6 +61,18 @@ export function Window({ rect, z, chrome, active, bounds, minSize, focusOnMount,
     if (drag.current?.id === e.pointerId) drag.current = null;
   };
 
+  // Keyboard alternative to dragging (WCAG 2.5.7): with the window frame itself focused,
+  // arrow keys move it and Shift with arrow keys resizes it.
+  const onKeyDown = (e: TargetedKeyboardEvent<HTMLElement>) => {
+    if (e.target !== e.currentTarget || e.ctrlKey || e.altKey || e.metaKey) return;
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    const [dx, dy] = [d[0]! * KEY_STEP, d[1]! * KEY_STEP];
+    const next = e.shiftKey ? { ...rect, w: rect.w + dx, h: rect.h + dy } : { ...rect, x: rect.x + dx, y: rect.y + dy };
+    onRect(clampRect(next, bounds, minSize));
+  };
+
   const style = {
     left: `${rect.x}px`,
     top: `${rect.y}px`,
@@ -70,8 +89,11 @@ export function Window({ rect, z, chrome, active, bounds, minSize, focusOnMount,
       ref={ref}
       class={`hs-win${active ? ' is-active' : ''}`}
       style={style}
+      data-win={winId}
       aria-labelledby={titleId}
+      aria-describedby={WINDOW_HELP_ID}
       tabIndex={-1}
+      onKeyDown={onKeyDown}
       onPointerDownCapture={onFocus}
       onFocusIn={onFocus}
     >

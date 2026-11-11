@@ -18,7 +18,7 @@ import { describeUrl, url as urls, vfsPath } from './routes';
 import { loadSettings, plainViewChosen, prefersReducedMotion, saveSettings, setPlainView, type Settings } from './settings';
 import type { AppArgs, Rect } from './types';
 import { clampRect, ICONS_W, MIN_SIZE, placeNew, type Bounds } from './wm/geometry';
-import { Window } from './wm/Window';
+import { Window, WINDOW_HELP_ID } from './wm/Window';
 import { BASE_MOUNTS } from './vfs/base';
 import { Vfs } from './vfs/vfs';
 
@@ -147,6 +147,9 @@ function initialWindows(bounds: Bounds): WmState {
   return { wins, top: wins.length };
 }
 
+const KEYBOARD_HELP =
+  'Arrow keys move this window, Shift and arrow keys resize it. Control and backquote switches to the next window.';
+
 // ---- The shell -----------------------------------------------------------------------------
 
 export default function Shell(props: Props) {
@@ -257,6 +260,22 @@ function Desktop({ projects, memos }: Props) {
     else document.title = 'HSOS';
   }, [activeKey]);
 
+  // Ctrl+` switches to the next window, Ctrl+Shift+` to the previous one, in opening order.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Backquote' || !e.ctrlKey || e.altKey || e.metaKey) return;
+      if (boot !== null || memo !== null || wm.wins.length === 0) return;
+      e.preventDefault();
+      const i = wm.wins.findIndex((w) => w.key === activeKey);
+      const n = wm.wins.length;
+      const next = wm.wins[(i + (e.shiftKey ? n - 1 : 1)) % n]!;
+      dispatch({ type: 'focus', key: next.key });
+      document.querySelector<HTMLElement>(`.hs-win[data-win="${CSS.escape(next.key)}"]`)?.focus({ preventScroll: true });
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [wm.wins, activeKey, boot, memo]);
+
   const menus = useMemo(
     () =>
       buildMenus({
@@ -264,6 +283,10 @@ function Desktop({ projects, memos }: Props) {
         openUrl: (u) => open('page', { url: u }),
         memo: setMemo,
         reboot,
+        shortcuts: () =>
+          setMemo(
+            'Keyboard shortcuts. Ctrl+` switches to the next window, Ctrl+Shift+` to the previous one. With a window selected, arrow keys move it and Shift with arrow keys resizes it. Tab moves between controls; menus open with Enter or the down arrow. Shortcuts are a privilege, not a right.',
+          ),
         plainView: () => {
           setPlainView(true);
           window.location.reload();
@@ -300,6 +323,7 @@ function Desktop({ projects, memos }: Props) {
           return (
             <Window
               key={w.key}
+              winId={w.key}
               rect={w.rect}
               z={w.z}
               chrome={app.chrome(w.args)}
@@ -327,6 +351,9 @@ function Desktop({ projects, memos }: Props) {
         })}
       </div>
       <DesktopIcons icons={icons} />
+      <p id={WINDOW_HELP_ID} hidden>
+        {KEYBOARD_HELP}
+      </p>
       {settings.scanlines && <div class="hs-scanlines" aria-hidden="true" />}
       {memo !== null && <MemoDialog text={memo} onClose={() => setMemo(null)} />}
     </div>

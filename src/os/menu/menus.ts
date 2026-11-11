@@ -19,6 +19,7 @@ export interface MenuActions {
   memo: (text: string) => void;
   reboot: () => void;
   plainView: () => void;
+  shortcuts: () => void;
   projects: readonly { name: string; url: string; divisionName: string }[];
 }
 
@@ -73,6 +74,7 @@ export function buildMenus(a: MenuActions): MenuDef[] {
       label: 'Help',
       items: [
         { label: 'Employee Handbook', hint: 'WELCOME.dd', run: () => a.open('welcome') },
+        { label: 'Keyboard Shortcuts', hint: 'Ctrl+`', run: a.shortcuts },
         { label: 'man hsos', run: () => a.memo('No manual entry for hsos. Please ask your line manager, who will ask theirs.') },
         'separator',
         { label: 'Report a Bug', run: () => a.memo('Bugs are features awaiting budget approval. Thank you for your feedback.') },
