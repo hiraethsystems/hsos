@@ -4,7 +4,7 @@
 import type { ComponentChildren, TargetedKeyboardEvent, TargetedPointerEvent } from 'preact';
 import { useEffect, useId, useRef } from 'preact/hooks';
 import type { FitMode, Rect, WindowChrome } from '../types';
-import { clampRect, fitCap, type Bounds } from './geometry';
+import { clampRect, fitCap, FIT_WIDE_MAX, type Bounds } from './geometry';
 
 /** Pixels per arrow key press when moving or resizing from the keyboard. */
 const KEY_STEP = 20;
@@ -57,6 +57,7 @@ export function Window({ winId, rect, fixed = false, hidden = false, z, chrome, 
       const { rect: r, bounds: b, minSize: min, onRect: set } = latest.current;
       const cap = fitCap(r, b);
       let w = r.w;
+      if (fit === 'wide') w = FIT_WIDE_MAX;
       if (fit === 'both') {
         // How much wider each marked line wants to be than it is now, at its natural width.
         let extra = -Infinity;

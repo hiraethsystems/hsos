@@ -364,6 +364,24 @@ a:hover {
   line-height: 1.6;
 }
 
+/* The Divisions page: two columns once there is room for them, so the window stays short. */
+.division-board {
+  container-type: inline-size;
+}
+@container (min-width: 900px) {
+  .division-columns {
+    column-count: 2;
+    column-gap: 32px;
+  }
+  .division-columns .doc-section {
+    break-inside: avoid;
+  }
+  /* Each column starts flush, so both tops line up under the lede. */
+  .division-columns .doc-section:first-child {
+    margin-top: 0;
+  }
+}
+
 .division-index {
   margin: 0 0 8px;
   padding: 0;

@@ -16,6 +16,8 @@ const projects = await getProjects();
   description="Every project of Hiraeth Systems, filed by division."
 >
   <p class="lede">Every product line, filed by division. Click an asset to open its dossier.</p>
+  <div class="division-board">
+  <div class="division-columns">
   {
     DIVISIONS.map((d) => {
       const inDivision = projects.filter((p) => p.data.division === d.id);
@@ -33,5 +35,7 @@ const projects = await getProjects();
       );
     })
   }
+  </div>
+  </div>
   <p class="perms">drwxr-x--- board:assets</p>
 </Document>

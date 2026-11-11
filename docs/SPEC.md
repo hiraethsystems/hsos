@@ -261,7 +261,8 @@ Optional full screen overlay of faint horizontal lines. Off by default. Never fl
   straight away). Document windows (the page viewer: WELCOME.dd, Divisions, dossiers, memos)
   open at their app's default width, and once their page has loaded the height is set so the
   content fits with no scrollbar. An app can also ask for its width to fit: then the window
-  widens until every line marked `data-fit-line` in the page sits on a single line.
+  widens until every line marked `data-fit-line` in the page sits on a single line, or for
+  all the width it has (`'wide'`, up to 1400px) when its page reflows into columns.
 - That fitted size is **capped to the visible desktop**: 16px clear of the menu bar, of the
   desktop icon column on the right, and of the bottom of the screen, measured from where the
   window was placed. Content bigger than the cap scrolls (section 4.4).
@@ -451,9 +452,12 @@ All behaviours below exist in the prototype unless marked (new).
    Default size: 660px wide, height fitted to the content (section 5). On the owner's monitor
    that is about 28% of the screen width and 85% of the desktop height.
 2. **Divisions** (`/srv/divisions/`): list of projects with small icons, slug and division.
-   Clicking opens the dossier. Default size: width and height fitted to the content, so each
-   project's one-line summary fits on one line (about 33% wide and 70% tall on the owner's
-   monitor). On the home page it opens 16px to the right of WELCOME.dd, side by side and never
+   Clicking opens the dossier. Default size: as wide as the room allows (up to 1400px), then
+   height fitted to the content. Once the page is at least 900px wide the divisions sit in two
+   balanced columns, so the window stays short enough to need no scrolling on the owner's
+   monitor; summaries may wrap to two lines there. Narrower, it is one column as before.
+   (Changed on 11 November 2026, when the project list grew to fourteen and the single column
+   ran off the bottom of the screen. Before that, the width fitted each summary on one line.) On the home page it opens 16px to the right of WELCOME.dd, side by side and never
    overlapping, capped so it stops 16px short of the icons; if the screen is too narrow for
    both, it cascades over the handbook as before.
 3. **Dossier** (`/srv/divisions/<division>/<slug>/DOSSIER`): screenshot panel, name, division,
@@ -544,7 +548,7 @@ export interface HsosApp {
   icon?: Sprite;                 // desktop / menu icon
   defaultRect: { x: number; y: number; w: number; h: number };
   minSize?: { w: number; h: number };
-  fitContent?: (args) => 'height' | 'both' | undefined; // fit the first size to the content (section 5)
+  fitContent?: (args) => 'height' | 'both' | 'wide' | undefined; // fit the first size to the content (section 5)
   singleton?: boolean;           // default true
   menu?: { menu: 'files' | 'apps' | 'help'; label: string; key?: string }[];
   commands?: TerminalCommand[];  // terminal commands this app adds

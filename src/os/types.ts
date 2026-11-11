@@ -47,7 +47,7 @@ export interface WindowChrome {
   ramp: TitleRampName;
 }
 
-export type FitMode = 'height' | 'both';
+export type FitMode = 'height' | 'both' | 'wide';
 
 export interface HsosApp {
   id: string;
@@ -60,7 +60,8 @@ export interface HsosApp {
   minSize?: { w: number; h: number };
   /**
    * Fit the window's first size to its content (SPEC 5): 'height' keeps the default width,
-   * 'both' also widens it until every `data-fit-line` element fits on one line.
+   * 'both' also widens it until every `data-fit-line` element fits on one line, and 'wide'
+   * widens it to all the room it has (up to FIT_WIDE_MAX), for pages that reflow into columns.
    */
   fitContent?: (args: AppArgs) => FitMode | undefined;
   /** Default true: opening again focuses the existing window. Keyed by `windowKey`. */

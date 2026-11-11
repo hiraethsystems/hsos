@@ -8,6 +8,8 @@ export const ICONS_W = 100;
 export const MIN_SIZE = { w: 240, h: 140 } as const;
 /** The clear margin a window's fitted first size keeps from the menu bar, icons and bottom. */
 export const FIT_GAP = 16;
+/** The widest a 'wide' fitted window grows, so columns stay a readable width on big screens. */
+export const FIT_WIDE_MAX = 1400;
 /** How much of a window must stay on screen, so its title bar can always be grabbed. */
 const GRAB = 80;
 const TITLE_H = 26;
