@@ -880,6 +880,11 @@ html.hsos-shell body {
 .hs-survey-card p {
   margin: 0;
 }
+.hs-survey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .hs-survey-status {
   flex: none;
   margin: 0;

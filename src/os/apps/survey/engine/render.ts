@@ -6,7 +6,7 @@
  */
 import { MATERIALS, shade } from './materials';
 import type { Frame } from './raster';
-import { groundHeight, isSea, N, padAt, vertex } from './terrain';
+import { groundHeight, isWater, materialFor, N, padAt, SEA, treeAt, vertex } from './terrain';
 import { FOOT, upAxis, type World } from './world';
 
 type V3 = [number, number, number];
@@ -140,8 +140,9 @@ export function render(f: Frame, w: World, cam: Camera): void {
       const c: V3 = [i, h01, j + 1];
       const d: V3 = [i + 1, h11, j + 1];
       const parity = (i + j) & 1;
-      if (isSea(t, i, j)) {
-        const slot = MATERIALS.sea[3 + parity]!;
+      if (isWater(t, i, j)) {
+        // Lakes sit higher and read a little lighter than the sea.
+        const slot = MATERIALS.sea[(h00 > SEA ? 4 : 3) + parity]!;
         tri(a, b, d, slot);
         tri(a, d, c, slot);
         continue;
@@ -153,14 +154,46 @@ export function render(f: Frame, w: World, cam: Camera): void {
         continue;
       }
       const avg = (h00 + h10 + h01 + h11) / 4;
-      const mat = avg < 0.22 ? MATERIALS.sand : avg < 1.9 ? MATERIALS.grass : avg < 2.9 ? MATERIALS.rock : MATERIALS.snow;
+      const mat = materialFor(avg);
       // Two triangles, split the same way as groundHeight, each lit by its own slope.
       tri(a, b, d, shade(mat, lit(cross(sub(d, a), sub(b, a))), parity));
       tri(a, d, c, shade(mat, lit(cross(sub(c, a), sub(d, a))), parity));
     }
+    // Trees stand on this row, so they go in after its tiles and before the nearer rows.
+    for (let i = i0; i <= i1; i++) {
+      const tree = treeAt(t, i, j);
+      if (tree) drawTree(i + (tree.x - Math.floor(tree.x)), tree.y, j + (tree.z - Math.floor(tree.z)), tree.height);
+    }
     if (j === shipRow) drawShip(sx, sz);
   }
   if (shipRow < j0 || shipRow > j1) drawShip(sx, sz);
+
+  /** A tree: a short trunk under a four sided canopy, lit face by face. */
+  function drawTree(x: number, y: number, z: number, h: number) {
+    const tw = 0.05;
+    const trunkTop = y + h * 0.3;
+    tri([x - tw, y, z], [x + tw, y, z], [x + tw, trunkTop, z], MATERIALS.trunk);
+    tri([x - tw, y, z], [x + tw, trunkTop, z], [x - tw, trunkTop, z], MATERIALS.trunk);
+    const r = 0.24;
+    const apex: V3 = [x, y + h, z];
+    const nw: V3 = [x - r, trunkTop, z + r];
+    const ne: V3 = [x + r, trunkTop, z + r];
+    const sw: V3 = [x - r, trunkTop, z - r];
+    const se: V3 = [x + r, trunkTop, z - r];
+    // The camera always looks north, so the north face is hidden and the south face is
+    // nearest. Of the sides, the one further from the camera goes first.
+    const face = (a: V3, b: V3, n: V3) => tri(a, b, apex, shade(MATERIALS.canopy, lit(n)));
+    const west = () => face(sw, nw, [-1, 0.6, 0]);
+    const east = () => face(ne, se, [1, 0.6, 0]);
+    if (cam.x < x) {
+      east();
+      west();
+    } else {
+      west();
+      east();
+    }
+    face(se, sw, [0, 0.6, -1]);
+  }
 
   function drawShip(x: number, z: number) {
     const ground = groundHeight(t, x, z);
@@ -206,5 +239,43 @@ export function render(f: Frame, w: World, cam: Camera): void {
     const slot = mat[Math.min(mat.length - 1, Math.floor(age * mat.length))]!;
     const size = p.kind === 'flame' ? 1 : 2;
     f.dot(px[0]!, px[1]!, Math.max(1, Math.round((size * focal) / 160)), slot);
+  }
+  drawMinimap(f, w);
+}
+
+/**
+ * The minimap, top left: the whole estate, one pixel per tile (two on big views), north up,
+ * centred on the drone. The drone is a white cross; pads are yellow.
+ */
+function drawMinimap(f: Frame, w: World): void {
+  const scale = f.h >= 360 ? 2 : 1;
+  const size = N * scale;
+  const ox = 4;
+  const oy = 4;
+  const ci = Math.floor(w.ship.x);
+  const cj = Math.floor(w.ship.z);
+  const border = MATERIALS.shadow;
+  for (let y = -1; y <= size; y++) {
+    for (let x = -1; x <= size; x++) {
+      const px = ox + x;
+      const py = oy + y;
+      if (px < 0 || py < 0 || px >= f.w || py >= f.h) continue;
+      let slot = border;
+      if (x >= 0 && y >= 0 && x < size && y < size) {
+        // Screen rows go down, the estate's z goes north (up).
+        const i = ci - N / 2 + Math.floor(x / scale);
+        const j = cj + N / 2 - 1 - Math.floor(y / scale);
+        slot = w.terrain.mini[(((i % N) + N) % N) + (((j % N) + N) % N) * N]!;
+      }
+      f.px[py * f.w + px] = slot;
+    }
+  }
+  if (w.ship.status === 'crashed') return;
+  const cx = ox + (N / 2) * scale + Math.floor(scale / 2);
+  const cy = oy + (N / 2 - 1) * scale + Math.floor(scale / 2);
+  const white = MATERIALS.hull[MATERIALS.hull.length - 1]!;
+  for (let d = -2; d <= 2; d++) {
+    f.px[cy * f.w + cx + d] = white;
+    f.px[(cy + d) * f.w + cx] = white;
   }
 }

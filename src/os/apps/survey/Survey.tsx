@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import type { AppProps } from '../../types';
 import { Frame } from './engine/raster';
 import { cameraFor, render, type Camera } from './engine/render';
-import { buildTerrain } from './engine/terrain';
+import { buildTerrain, randomSeed } from './engine/terrain';
 import { altitude, newWorld, speed, step, type FlightEvent, type World } from './engine/world';
 
 const STEP = 1 / 120;
@@ -25,7 +25,7 @@ const MAX_W = 420;
 /** Touch: dragging this many CSS pixels gives full tilt. */
 const TOUCH_RANGE = 70;
 
-const terrain = buildTerrain();
+const newEstate = () => newWorld(buildTerrain(randomSeed()));
 
 interface Hud {
   fuel: number;
@@ -36,7 +36,14 @@ interface Hud {
 
 const MESSAGES: Record<FlightEvent['type'], (e: FlightEvent) => string> = {
   landed: (e) => (e.type === 'landed' && e.pad ? `Landed on ${e.pad}. Refuelling at company expense.` : 'Landed. No fuel out here, only scenery.'),
-  crashed: (e) => (e.type === 'crashed' && e.cause === 'sea' ? 'Lost at sea. The sea is not on the asset register.' : 'Crashed. Damage has been billed to your department.'),
+  crashed: (e) =>
+    e.type !== 'crashed'
+      ? ''
+      : e.cause === 'water'
+        ? 'Lost in the water. Water is not on the asset register.'
+        : e.cause === 'tree'
+          ? 'Crashed into a tree. The tree has been asked to submit a statement.'
+          : 'Crashed. Damage has been billed to your department.',
   respawned: () => 'A replacement drone has been issued from Pad A.',
   refuelled: () => 'Tank full. Try to bring it back this time.',
   empty: () => 'Fuel exhausted. Gravity has taken over the project.',
@@ -46,7 +53,7 @@ export function Survey({ clock }: AppProps) {
   const root = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const world = useRef<World>(newWorld(terrain));
+  const world = useRef<World>(newEstate());
   const cam = useRef<Camera>(cameraFor(world.current));
   const frame = useRef<{ f: Frame; img: ImageData; ctx: CanvasRenderingContext2D } | null>(null);
   const input = useRef({ keys: new Set<string>(), mouse: null as null | { x: number; z: number }, touch: null as null | { x0: number; y0: number; x: number; z: number; id: number }, mouseThrust: false, buttonThrust: false, kb: { x: 0, z: 0 } });
@@ -159,6 +166,14 @@ export function Survey({ clock }: AppProps) {
     setPhase('running');
     stage.current?.focus({ preventScroll: true });
   };
+  /** A new game: a freshly generated estate and a new drone. */
+  const fresh = () => {
+    world.current = newEstate();
+    cam.current = cameraFor(world.current);
+    setHud({ fuel: 100, alt: 0, spd: 0, status: 'New estate surveyed into existence. On Pad A.' });
+    draw();
+    start();
+  };
   const pause = () => {
     const inp = input.current;
     inp.keys.clear();
@@ -267,7 +282,7 @@ export function Survey({ clock }: AppProps) {
             {phase === 'intro' ? (
               <>
                 <h2 class="hs-app-heading">Estate Survey</h2>
-                <p>Fly the company drone over the estate. It thrusts the way it is tilted, so tilt gently.</p>
+                <p>Fly the company drone over a newly acquired estate. It thrusts the way it is tilted, so tilt gently. Mind the trees.</p>
                 <p>
                   {coarse ? 'Drag on the view to tilt. Hold Thrust to climb.' : 'Mouse tilts, hold the button to thrust. Or arrow keys and Space.'} Land
                   slowly and level on the yellow pads to refuel. Escape pauses.
@@ -281,9 +296,14 @@ export function Survey({ clock }: AppProps) {
               <>
                 <h2 class="hs-app-heading">Survey suspended</h2>
                 <p>Pending review. The estate will wait; it has nowhere else to be.</p>
-                <button type="button" class="hs-btn" onClick={start}>
-                  Resume
-                </button>
+                <p class="hs-survey-actions">
+                  <button type="button" class="hs-btn" onClick={start}>
+                    Resume
+                  </button>
+                  <button type="button" class="hs-btn" onClick={fresh}>
+                    New estate
+                  </button>
+                </p>
               </>
             )}
           </div>

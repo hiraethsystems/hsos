@@ -463,9 +463,16 @@ own tilt over a 3D landscape of flat shaded tiles, with gravity, momentum and fu
 - A small software renderer draws into an **indexed framebuffer** (one palette slot per pixel)
   and shows it scaled up by whole numbers, so no blended colour can ever appear. A test checks
   every pixel on screen against the palette.
-- The estate is 64 by 64 tiles and wraps round. Three 3 by 3 landing pads refuel the drone;
-  landing anywhere else is allowed if it is gentle, level and on even ground. The sea is
-  always a crash. A crash issues a replacement drone at Pad A.
+- The estate is 64 by 64 tiles and wraps round. **Every new game generates a new estate**
+  from a random seed (owner's request): lowlands, hills and snow capped mountain ridges, the
+  sea, 3 to 5 lakes carved into the hills at their own levels, woods of trees on the grass,
+  and three 3 by 3 landing pads placed on dry, gentle ground well apart. A crash keeps the same
+  estate; "New estate" on the pause card makes another. Pads refuel the drone; landing
+  anywhere else is allowed if it is gentle, level and on even ground. Water (sea or lake) is
+  always a crash, and so is flying into a tree. A crash issues a replacement drone at Pad A.
+- A **minimap** sits in the top left of the view (owner's request): the whole estate, one
+  pixel per tile (two on big views), north up and centred on the drone, drawn into the same
+  framebuffer. Pads are yellow, woods dark green, the drone a white cross.
 - The camera faces north, follows from behind and above, pulls back as the drone climbs, and
   aims between the drone and its shadow so both stay in view.
 - It runs on its own animation frame loop (smooth flight needs it), not the shared six tick

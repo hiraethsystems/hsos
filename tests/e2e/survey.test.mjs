@@ -62,6 +62,13 @@ export default async function survey({ base, check }) {
     check('Escape pauses', (await hud()).card === 'Survey suspended');
     const a1 = await alt(); await b.wait(500);
     check('nothing moves while paused', a1 === (await alt()));
+    const mini = () => b.eval(`document.querySelector('.hs-survey-canvas').getContext('2d').getImageData(5, 5, 64, 64).data.join()`);
+    const m1 = await mini();
+    check('a minimap sits in the top left', new Set(m1.split(',')).size > 6);
+    await b.eval(`[...document.querySelectorAll('.hs-survey-card .hs-btn')].find(x => x.textContent.includes('New estate')).click()`); await b.wait(300);
+    check('New estate makes a different map', m1 !== (await mini()) && (await hud()).status.startsWith('New estate'), (await hud()).status);
+    check('a new estate starts on Pad A with a full tank', (await alt()) === 0 && (await fuel()) === 100);
+    await b.keys(['\uE00C']); await b.wait(150);
     await b.eval(`document.querySelector('.hs-survey-card .hs-btn').click()`); await b.wait(200);
     check('Resume carries on', (await hud()).card === null);
     // A real click elsewhere (a script moving focus does not count in a background window).

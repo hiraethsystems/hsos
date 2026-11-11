@@ -17,6 +17,9 @@ export const MATERIALS = {
   /** Listening Post teals, then the Ledger's Q5 blues. */
   sea: [...RAMP.listening, ...rev(RAMP['ledger-q5'])],
   pad: refs('button-hover.1', 'highlight'),
+  /** Woods: the darkest greens, so trees stand out from the grass. */
+  canopy: [...RAMP.files, RAMP['ledger-q4'][3]!],
+  trunk: refIndex('brown'),
   hull: refs('dark-grey', 'muted', 'light-grey', 'paper-edge', 'white'),
   trim: [...RAMP.hr],
   flame: RAMP.heat.slice(18),

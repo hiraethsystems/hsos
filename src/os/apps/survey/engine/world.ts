@@ -5,7 +5,7 @@
  *
  * Input is a tilt vector: x is east, z is north (away from the camera), length 0 to 1.
  */
-import { groundHeight, isSea, N, padAt, PAD_SIZE, PADS, tileRoughness, type Terrain } from './terrain';
+import { groundHeight, isWater, N, padAt, PAD_SIZE, tileRoughness, treeAt, type Terrain } from './terrain';
 
 export const GRAVITY = 4;
 export const THRUST = 10;
@@ -14,7 +14,9 @@ export const MAX_TILT = 1.05; // radians, about 60 degrees
 export const TILT_RATE = 7; // how fast the ship turns to the tilt asked for
 export const FUEL_BURN = 7; // per second of thrust, out of 100
 export const REFUEL = 35; // per second, on a pad
-export const CEILING = 24;
+export const CEILING = 30;
+/** Trees are this wide, for hitting them. */
+const TREE_R = 0.22;
 /** Height of the ship's undercarriage above its centre. */
 export const FOOT = 0.14;
 /** A landing survives below these. */
@@ -59,7 +61,7 @@ export interface Ship {
 /** Something worth telling the player. */
 export type FlightEvent =
   | { type: 'landed'; pad: string | null }
-  | { type: 'crashed'; cause: 'impact' | 'sea' }
+  | { type: 'crashed'; cause: 'impact' | 'water' | 'tree' }
   | { type: 'respawned' }
   | { type: 'refuelled' }
   | { type: 'empty' };
@@ -71,11 +73,10 @@ export interface World {
   time: number;
 }
 
-const home = PADS[0];
-const padCentre = (k: number) => ({ x: PADS[k]!.i + PAD_SIZE / 2, z: PADS[k]!.j + PAD_SIZE / 2 });
+const padCentre = (t: Terrain, k: number) => ({ x: t.padList[k]!.i + PAD_SIZE / 2, z: t.padList[k]!.j + PAD_SIZE / 2 });
 
 function freshShip(t: Terrain): Ship {
-  const c = padCentre(0);
+  const c = padCentre(t, 0);
   return {
     x: c.x,
     y: groundHeight(t, c.x, c.z) + FOOT,
@@ -221,14 +222,30 @@ export function step(w: World, dt: number, tilt: { x: number; z: number }, thrus
     });
   }
 
+  // Trees: anything lower than a tree's top, close to its trunk, has hit it.
+  const ti = Math.floor(s.x);
+  const tj = Math.floor(s.z);
+  for (let dj = -1; dj <= 1; dj++) {
+    for (let di = -1; di <= 1; di++) {
+      const tree = treeAt(t, ti + di, tj + dj);
+      if (!tree) continue;
+      const dx = s.x - (tree.x + Math.round((ti - Math.floor(tree.x)) / N) * N);
+      const dz = s.z - (tree.z + Math.round((tj - Math.floor(tree.z)) / N) * N);
+      if (Math.hypot(dx, dz) < TREE_R + 0.2 && s.y - FOOT < tree.y + tree.height) {
+        crash(w, 'tree', events);
+        return;
+      }
+    }
+  }
+
   const g = groundHeight(t, s.x, s.z);
   if (s.y - FOOT > g) return;
 
   // Touchdown. Gentle, level and on even ground is a landing; anything else is a write-off.
   const i = Math.floor(s.x);
   const j = Math.floor(s.z);
-  if (isSea(t, i, j)) {
-    crash(w, 'sea', events);
+  if (isWater(t, i, j)) {
+    crash(w, 'water', events);
     return;
   }
   const gentle = -s.vy < SAFE.fall && Math.hypot(s.vx, s.vz) < SAFE.slide && tiltAngle(s) < SAFE.tilt && tileRoughness(t, i, j) < SAFE.rough;
@@ -241,17 +258,16 @@ export function step(w: World, dt: number, tilt: { x: number; z: number }, thrus
   s.y = g + FOOT;
   s.vx = s.vy = s.vz = 0;
   s.pad = pad ? pad - 1 : null;
-  events.push({ type: 'landed', pad: pad ? PADS[pad - 1]!.name : null });
+  events.push({ type: 'landed', pad: pad ? t.padList[pad - 1]!.name : null });
 }
 
-function crash(w: World, cause: 'impact' | 'sea', events: FlightEvent[]): void {
+function crash(w: World, cause: 'impact' | 'water' | 'tree', events: FlightEvent[]): void {
   const s = w.ship;
   s.status = 'crashed';
   s.wreck = 0;
   s.thrusting = false;
   s.y = groundHeight(w.terrain, s.x, s.z) + 0.05;
-  burst(w, cause === 'sea' ? 'spray' : 'debris', 48, cause === 'sea' ? 2.5 : 3.5);
+  burst(w, cause === 'water' ? 'spray' : 'debris', 48, cause === 'water' ? 2.5 : 3.5);
   events.push({ type: 'crashed', cause });
 }
 
-export { home as HOME_PAD };
