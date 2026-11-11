@@ -1,6 +1,6 @@
 /**
  * Desktop icons and the logo. Each icon is 16 by 16 pixels, drawn at 3x on the desktop.
- * The logo is 24 by 24, drawn at 3x.
+ * The logo is 32 by 32, drawn at 3x.
  * Edit the art by hand: one character per pixel, `.` is transparent, the legend says which
  * palette colour each letter is. Shading uses stepped bands, never blends.
  */
@@ -191,40 +191,49 @@ const bin = spriteFromArt(
 );
 
 /**
- * The Hiraeth Systems logo, 24 by 24: an enso (one open brush circle) with a sea wave breaking
- * inside it. Drawn by hand. The stroke is white ink: it lands heavy at the top, runs
- * anticlockwise and lifts thin at the upper right. The wave uses the wave ramp, crest to
- * trough, with white foam.
+ * The Hiraeth Systems logo, 32 by 32: an enso (one open brush circle) in white ink, with a sea
+ * wave breaking inside it. The brush lands in a round blot at the top, runs anticlockwise,
+ * heavy down the left, then thins and splits into dry bristle streaks (G) before it lifts at
+ * the upper right. The wave uses the wave ramp, crest to trough, with white foam.
  */
 const LOGO_ART = spriteFromArt(
   [
-    '.........WWWW...........',
-    '.......WWWWWWWWW........',
-    '.....WWWWWWWWWWWWW......',
-    '....WWWWWWWWWWWWWWW.....',
-    '...WWWWWWW.WWWWWWW......',
-    '..WWWWWW.....WWW........',
-    '..WWWWW.................',
-    '.WWWWW.......WWWWW......',
-    '.WWWWW.....WWAAAAAW...W.',
-    '.WWWW.....WAABBBBAW...W.',
-    'WWWWW....WABB....BB...WW',
-    'WWWWW....WAB.WW..BB...WW',
-    'WWWWW.....W.WAB..BB...WW',
-    'WWWWW......WAB..BBC..WWW',
-    '.WWWW.......B..BBCC..WW.',
-    '.WWWWW.......BBBCCC.WWW.',
-    '.WWWW.....WWBBCCCCD.WWW.',
-    '..WWW...WWBBCCCDDDD.WW..',
-    '..WWWW.WWBBCCDDDDD.WWW..',
-    '...WWWWWWWW.....WWWWW...',
-    '....WWWWWWWWWWWWWWWW....',
-    '.....WWWWWWWWWWWWWW.....',
-    '.......WWWWWWWWWW.......',
-    '..........WWWW..........',
+    '.............WWWW...............',
+    '..........WWWWWWWWWWW...........',
+    '........WWWWWWWWWWWWWWWW........',
+    '......WWWWWWWWWWWWWWWWWWW.......',
+    '.....WWWWWWWWWWWWWWWWWWWWW......',
+    '....WWWWWWWWWWWWWWWWWWWWWW......',
+    '...WWWWWWWWWW....WWWWWWWW.......',
+    '...WWWWWWW...........WWWW.......',
+    '..WWWWWWW.......................',
+    '..WWWWWW.......WWWWWW...........',
+    '.WWWWWW......WWAAAAAAW..........',
+    '.WWWWWW.....WAAABBBBBAW......W..',
+    '.WWWWWW....WAAB.....BBAW......G.',
+    '.WWWWW....WAB.........BB.....WG.',
+    '.WWWWW....WB...WWW....BB.....WW.',
+    '.WWWWW.....W..WAAAW...BB.....WW.',
+    '.WWWWW.......WAB..B..BBC.....WW.',
+    '.WWWWW.......WB......BBC.....WW.',
+    '.WWWWWW.......B.....BBCC.....WW.',
+    '.WWWWWW............BBCCC......W.',
+    '..WWWWW..........WBBCCCD......G.',
+    '..WWWWWW.......WWBBCCCDD....WWG.',
+    '...WWWWWW...WWWBBCCCDDDD...W.W..',
+    '...WWWWWWW...WWBCCCDDDDD..WWWG..',
+    '....WWWWWWW..............WW.W...',
+    '.....WWWWWWW............WW.WW...',
+    '.....WWWWWWWWW........WWW.WW....',
+    '......WWWWWWWWWWWWWWWWWW.WW.....',
+    '........WWWWWWWWWWWWWWWWWW......',
+    '.........WWWWWWWWWWWWWWW........',
+    '...........WWWWWWWWWWW..........',
+    '...............WWWW.............',
   ],
   {
     W: 'white',
+    G: 'light-grey',
     A: 'wave.0',
     B: 'wave.1',
     C: 'wave.2',
